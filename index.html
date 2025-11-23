@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <title>Космический Кликер</title>
+  <link rel="stylesheet" href="assets/styles/main.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <!-- Canvas для планетарного фона -->
+  <canvas id="planetBackgroundCanvas"></canvas>
+  <!-- UI -->
+  <div id="header">
+    <h2 id="gameTitle">☿ Меркурий</h2>
+  </div>
+  <!-- Кнопка сохранения -->
+  <button id="saveBtn" title="Сохранить игру">
+    <i class="fas fa-save"></i>
+  </button>
+  <!-- HUD - ВНИЗУ СЛЕВА -->
+  <div id="hud-left">
+    <div class="hud-item" id="coins"><i class="fas fa-gem"></i> Кристаллы: <span id="coins-value">0</span></div>
+    <div class="hud-item" id="clickPowerInfo"><i class="fas fa-fist-raised"></i> Сила: <span id="clickPower-value">1</span></div>
+    <div class="hud-item" id="critChanceInfo"><i class="fas fa-star"></i> Крит: <span id="critChance-value">0.1%</span></div>
+    <div class="hud-item" id="critMultiplierInfo"><i class="fas fa-star"></i> Множ: <span id="critMultiplier-value">x2.0</span></div>
+  </div>
+  <!-- ПРОГРЕСС-БАР -->
+  <div id="progressContainer">
+    <div id="progressBar"></div>
+  </div>
+  <div id="progressText">Прогресс: 0.00000 / 0.38710 а.е. (0%)</div>
+  <div id="gameArea"></div>
+  <div id="levelAnnounce"></div>
+  <!-- КНОПКИ УЛУЧШЕНИЙ -->
+  <button id="upgradeClickBtn" class="upgrade-btn btn-unavailable">
+    <i class="fas fa-fist-raised"></i>
+    <div class="upgrade-cost">80</div>
+  </button>
+  <button id="upgradeHelperBtn" class="upgrade-btn btn-unavailable">
+    <i class="fas fa-robot"></i>
+    <div class="upgrade-cost">1500</div>
+  </button>
+  <button id="upgradeCritChanceBtn" class="upgrade-btn btn-unavailable">
+    <i class="fas fa-star"></i>
+    <div class="upgrade-cost">500</div>
+  </button>
+  <button id="upgradeCritMultBtn" class="upgrade-btn btn-unavailable">
+    <i class="fas fa-star"></i>
+    <div class="upgrade-cost">800</div>
+  </button>
+  <button id="upgradeHelperDmgBtn" class="upgrade-btn btn-unavailable">
+    <i class="fas fa-bolt"></i>
+    <div class="upgrade-cost">1000</div>
+  </button>
+  <div id="tooltip" class="tooltip"></div>
+  <canvas id="particlesCanvas"></canvas>
+  <!-- Экраны -->
+  <div id="welcomeScreen">
+    <h2>🚀 КОСМИЧЕСКИЙ КЛИКЕР</h2>
+    <p>Разрушайте восходящие блоки и собирайте <strong>космические Кристаллы</strong>!</p>
+    <p>Каждый блок требует определённого количества ударов для разрушения.</p>
+    <p><strong>Реалистичная система прогресса:</strong></p>
+    <p>🌌 <strong>Астрономические единицы</strong> — перемещайтесь по Солнечной системе</p>
+    <p>🪐 <strong>9 реальных планет</strong> — от Меркурия до Плутона</p>
+    <p>🚀 <strong>Улучшения</strong> — увеличивайте силу, криты и активируйте помощника</p>
+    <p>✨ <strong>Редкие блоки</strong> — дают бонусы и огромные награды!</p>
+    <button id="continueBtn" class="btn no-save">Продолжить</button>
+    <button id="startBtn" class="btn">Новая игра</button>
+    <button id="dailyRewardsBtn" class="btn" style="background: #ffc107; margin-top: 5px;">🎁 Ежедневные награды</button>
+  </div>
+  <div id="saveScreen">
+    <h2>СОХРАНЕНИЕ ИГРЫ</h2>
+    <p>Хотите продолжить с сохраненной игры или начать новую?</p>
+    <button id="loadSaveBtn" class="btn">Продолжить сохраненную игру</button>
+    <button id="newGameBtn" class="btn">Начать новую игру</button>
+    <button id="cancelSaveBtn" class="btn" style="background: #666;">Отмена</button>
+  </div>
+  <div id="developmentScreen">
+    <h2>🚧 ЛОКАЦИЯ ЮПИТЕР НАХОДИТСЯ В РАЗРАБОТКЕ</h2>
+    <p>Вы достигли границы исследованного космоса!</p>
+    <p>Следующая локация будет доступна в будущем обновлении.</p>
+    <button id="restartFromDevBtn" class="btn">Начать добычу заново</button>
+  </div>
+  <div id="dailyRewardsScreen">
+    <h2>🌟 ЕЖЕДНЕВНЫЕ НАГРАДЫ</h2>
+    <div class="daily-rewards-container" id="dailyRewardsContainer">
+      <!-- Дни будут генерироваться динамически -->
+    </div>
+    <p id="dailyRewardInfo" style="margin-bottom: 20px;">Возвращайтесь каждый день для получения уникальных наград!</p>
+    <button id="claimDailyRewardBtn" class="btn">Забрать награду</button>
+    <button id="closeDailyRewardsBtn" class="btn">Закрыть</button>
+  </div>
+  <div id="gameOverScreen">
+    <h2>ДОБЫЧА ПРЕРВАНА!</h2>
+    <div id="finalScore">Всего урона: 0</div>
+    <button id="restartBtn">Новая добыча</button>
+    <button id="shareBtn">Поделиться</button>
+    <button id="dailyRewardBtn">🎁 Ежедневная награда</button>
+  </div>
+  <!-- Аудио элементы -->
+  <audio id="clickSound" preload="auto">
+    <source src="assets/sounds/click.wav" type="audio/wav">
+  </audio>
+  <audio id="breakSound" preload="auto">
+    <source src="assets/sounds/break.wav" type="audio/wav">
+  </audio>
+  <audio id="upgradeSound" preload="auto">
+    <source src="assets/sounds/upgrade.wav" type="audio/wav">
+  </audio>
+  <audio id="comboSound" preload="auto">
+    <source src="assets/sounds/combo.wav" type="audio/wav">
+  </audio>
+  <audio id="helperSound" preload="auto">
+    <source src="assets/sounds/helper.wav" type="audio/wav">
+  </audio>
+  
+  <script type="module" src="./src/main.js"></script>
+</body>
+</html>
