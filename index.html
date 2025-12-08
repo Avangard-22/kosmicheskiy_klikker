@@ -536,7 +536,39 @@
         width: 10px;
         height: 10px;
       }
+/* Дополнительные медиа-запросы для кнопок в ландшафтном режиме */
+@media (max-height: 500px) and (orientation: landscape) {
+    #shopBtn, #achievementsBtn {
+        top: 8px !important;
+        width: 35px !important;
+        height: 35px !important;
+        font-size: 1em !important;
     }
+    
+    #shopBtn {
+        right: 45px !important;
+    }
+    
+    #achievementsBtn {
+        right: 85px !important;
+    }
+}
+
+/* Предотвращение выделения текста на мобильных */
+#shopModal, #achievementsModal,
+#shopModal *, #achievementsModal * {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+/* Улучшение скроллинга на iOS */
+#shopModal > div, #achievementsModal > div {
+    -webkit-overflow-scrolling: touch;
+    overflow-y: auto;
+}    
+}
     @keyframes gold-shimmer {
         0% { box-shadow: 0 0 10px rgba(255, 215, 0, 0.5), 0 0 5px rgba(255, 107, 0, 0.3) inset; }
         50% { box-shadow: 0 0 20px rgba(255, 215, 0, 0.8), 0 0 10px rgba(255, 107, 0, 0.6) inset; }

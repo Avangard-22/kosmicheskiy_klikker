@@ -1,361 +1,77 @@
-#shopBtn {
-    position: absolute;
-    top: 10px;
-    right: 60px;
-    width: 40px;
-    height: 40px;
-    border: none;
-    border-radius: 8px;
-    font-size: 1.2em;
-    cursor: pointer;
-    z-index: 30;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: rgba(0, 0, 0, 0.5);
-    color: #ffd700;
-    transition: transform 0.1s;
-    backdrop-filter: blur(4px);
-}
-
-#shopBtn:active {
-    transform: scale(0.92);
-}
-
-.buy-bonus-btn:active {
-    transform: scale(0.95);
-}
-
-.buy-bonus-btn:disabled {
-    background: linear-gradient(135deg, #666, #444);
-    cursor: not-allowed;
-    opacity: 0.7;
-}
-
 /* Стили для модального окна магазина */
-.shop-modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.95);
-    backdrop-filter: blur(10px);
-    display: none;
-    z-index: 1000;
-    justify-content: center;
-    align-items: center;
-    padding: 10px;
-    box-sizing: border-box;
-    overflow-y: auto;
+#shopModal {
+    touch-action: manipulation;
     -webkit-overflow-scrolling: touch;
 }
 
-.shop-modal-content {
-    background: linear-gradient(135deg, rgba(30, 20, 50, 0.95), rgba(20, 10, 40, 0.98));
-    border-radius: 15px;
-    width: 100%;
-    max-width: 600px;
-    padding: 20px;
-    border: 2px solid #ffd700;
-    color: white;
-    position: relative;
-    max-height: 90vh;
-    overflow-y: auto;
-    box-sizing: border-box;
-    box-shadow: 0 0 40px rgba(255, 215, 0, 0.3);
+#shopModal > div {
+    scrollbar-width: thin;
+    scrollbar-color: #ffd700 rgba(0, 0, 0, 0.3);
 }
 
-.shop-close-btn {
-    position: absolute;
-    top: 10px;
-    right: 15px;
-    font-size: 1.8em;
-    color: #aaa;
-    cursor: pointer;
-    z-index: 1001;
-    width: 40px;
-    height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
+#shopModal > div::-webkit-scrollbar {
+    width: 6px;
+}
+
+#shopModal > div::-webkit-scrollbar-track {
     background: rgba(0, 0, 0, 0.3);
+    border-radius: 3px;
 }
 
-.shop-close-btn:active {
-    background: rgba(0, 0, 0, 0.5);
+#shopModal > div::-webkit-scrollbar-thumb {
+    background: #ffd700;
+    border-radius: 3px;
 }
 
-.shop-title {
-    text-align: center;
-    color: #ffd700;
-    margin: 10px 0 20px 0;
-    font-size: 1.8em;
-    text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
-    padding: 0 10px;
-}
-
-.shop-items-container {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 15px;
-    margin: 20px 0;
-}
-
-.active-bonuses-container {
-    margin-top: 20px;
-    padding-top: 20px;
-    border-top: 1px solid rgba(255, 215, 0, 0.3);
-}
-
-.bonus-item {
-    background: linear-gradient(135deg, rgba(50, 40, 80, 0.8), rgba(40, 30, 70, 0.9));
-    border-radius: 12px;
-    padding: 20px;
-    border: 1px solid #a0d2ff;
-    transition: all 0.3s ease;
-    box-sizing: border-box;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-    position: relative;
-    overflow: hidden;
-}
-
-.bonus-item:active {
-    transform: translateY(2px);
-}
-
-.bonus-title {
-    color: #ffd700;
-    margin: 0 0 10px 0;
-    font-size: 1.3em;
-    text-shadow: 0 0 5px rgba(255, 215, 0, 0.3);
-}
-
-.bonus-description {
-    color: #a0d2ff;
-    margin: 0 0 15px 0;
-    font-size: 0.95em;
-    line-height: 1.4;
-}
-
-.bonus-cost {
-    font-weight: bold;
-    color: #ffd54f;
-    margin: 15px 0;
-    font-size: 1.2em;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    justify-content: center;
+.shop-bonus-item {
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
 }
 
 .buy-bonus-btn {
-    background: linear-gradient(135deg, #4a3d86, #6a5add);
-    color: white;
-    border: none;
-    border-radius: 8px;
-    padding: 12px;
-    cursor: pointer;
-    width: 100%;
-    font-family: 'Orbitron', sans-serif;
-    font-size: 1.1em;
-    font-weight: bold;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 10px rgba(106, 90, 221, 0.3);
-    min-height: 50px;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
     touch-action: manipulation;
 }
 
-.buy-bonus-btn:not(:disabled):active {
-    transform: translateY(3px);
-    box-shadow: 0 2px 5px rgba(106, 90, 221, 0.3);
+.buy-bonus-btn:active:not(:disabled) {
+    transform: scale(0.95) !important;
 }
 
-.buy-bonus-btn.active {
-    background: linear-gradient(135deg, #2E7D32, #1B5E20);
-    cursor: default;
+.buy-bonus-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
 }
 
-/* Мобильная адаптация */
-@media (max-width: 768px) {
-    .shop-modal {
-        padding: 5px;
-    }
-    
-    .shop-modal-content {
-        width: 95%;
-        max-width: none;
-        padding: 15px;
-        max-height: 95vh;
-        margin: 10px;
-        border-radius: 12px;
-    }
-    
-    .shop-title {
-        font-size: 1.5em;
-        margin: 5px 0 15px 0;
-    }
-    
-    .shop-items-container {
-        gap: 12px;
-        margin: 15px 0;
-    }
-    
-    .bonus-item {
-        padding: 15px;
-        border-radius: 10px;
-    }
-    
-    .bonus-title {
-        font-size: 1.2em;
-        margin-bottom: 8px;
-    }
-    
-    .bonus-description {
-        font-size: 0.9em;
-        margin-bottom: 12px;
-    }
-    
-    .bonus-cost {
-        font-size: 1.1em;
-        margin: 12px 0;
-    }
-    
-    .buy-bonus-btn {
-        padding: 10px;
-        font-size: 1em;
-        min-height: 45px;
-        border-radius: 6px;
-    }
-    
+/* Адаптация для очень маленьких экранов */
+@media (max-width: 320px) {
     #shopBtn {
-        width: 35px;
-        height: 35px;
-        font-size: 1em;
-        right: 50px;
-    }
-}
-
-/* Для очень маленьких экранов */
-@media (max-width: 480px) {
-    .shop-modal-content {
-        padding: 12px;
-        margin: 5px;
-        border-radius: 10px;
+        right: 45px !important;
+        width: 32px !important;
+        height: 32px !important;
+        font-size: 0.9em !important;
     }
     
-    .shop-title {
-        font-size: 1.3em;
+    #shopModal > div {
+        max-width: 98% !important;
+        padding: 10px !important;
     }
     
-    .bonus-item {
-        padding: 12px;
-    }
-    
-    .bonus-title {
-        font-size: 1.1em;
-    }
-    
-    .bonus-description {
-        font-size: 0.85em;
-    }
-    
-    .bonus-cost {
-        font-size: 1em;
-    }
-    
-    .buy-bonus-btn {
-        padding: 8px;
-        font-size: 0.95em;
-        min-height: 42px;
-    }
-}
-
-/* Для горизонтальной ориентации на мобильных */
-@media (max-height: 500px) and (orientation: landscape) {
-    .shop-modal-content {
-        max-height: 85vh;
-        padding: 10px;
-    }
-    
-    .shop-items-container {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 10px;
-    }
-    
-    .bonus-item {
-        padding: 12px;
-    }
-    
-    .bonus-title {
-        font-size: 1.1em;
-    }
-    
-    .bonus-description {
-        font-size: 0.85em;
-        min-height: 40px;
+    .shop-bonus-item {
+        padding: 10px !important;
+        min-height: 110px !important;
     }
 }
 
 /* Адаптация для планшетов */
-@media (min-width: 769px) and (max-width: 1024px) {
-    .shop-items-container {
-        grid-template-columns: repeat(2, 1fr);
+@media (min-width: 768px) and (max-width: 1024px) {
+    #shopModal > div {
+        max-width: 80% !important;
     }
     
-    .shop-modal-content {
-        max-width: 90%;
-    }
-}
-
-/* Анимации */
-@keyframes shopItemAppear {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.bonus-item {
-    animation: shopItemAppear 0.3s ease-out;
-}
-
-/* Улучшенная прокрутка для мобильных */
-.shop-modal-content::-webkit-scrollbar {
-    width: 6px;
-}
-
-.shop-modal-content::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 3px;
-}
-
-.shop-modal-content::-webkit-scrollbar-thumb {
-    background: rgba(255, 215, 0, 0.5);
-    border-radius: 3px;
-}
-
-/* Эффект при наведении (для десктопа) */
-@media (hover: hover) and (pointer: fine) {
-    .bonus-item:hover {
-        transform: translateY(-5px);
-        border-color: #ffd700;
-        box-shadow: 0 8px 25px rgba(255, 215, 0, 0.4);
-    }
-    
-    .buy-bonus-btn:hover:not(:disabled) {
-        background: linear-gradient(135deg, #5a4d96, #7a6aed);
-        transform: translateY(-2px);
-        box-shadow: 0 6px 15px rgba(106, 90, 221, 0.4);
-    }
-    
-    .shop-close-btn:hover {
-        color: white;
-        background: rgba(255, 0, 0, 0.3);
+    #shopItemsContainer {
+        grid-template-columns: repeat(2, 1fr) !important;
     }
 }

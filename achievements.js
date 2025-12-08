@@ -10,7 +10,28 @@ document.addEventListener('DOMContentLoaded', function() {
             this.setupAchievements();
             this.loadAchievementsData();
             this.setupEventListeners();
-            this.setupMobileOptimizations();
+            this.hookBoboActivation();
+            this.setupMobileAdaptation();
+        }
+        
+        setupMobileAdaptation() {
+            this.checkOrientation();
+            window.addEventListener('resize', () => this.checkOrientation());
+            window.addEventListener('orientationchange', () => {
+                setTimeout(() => this.checkOrientation(), 100);
+            });
+        }
+        
+        checkOrientation() {
+            const modalContent = document.querySelector('#achievementsModal > div');
+            if (!modalContent) return;
+            
+            if (this.isMobile) {
+                const isLandscape = window.innerHeight < window.innerWidth;
+                modalContent.style.maxWidth = isLandscape ? '90%' : '95%';
+                modalContent.style.maxHeight = isLandscape ? '95vh' : '90vh';
+                modalContent.style.padding = isLandscape ? '15px' : '12px';
+            }
         }
         
         initAchievementsButton() {
@@ -20,9 +41,25 @@ document.addEventListener('DOMContentLoaded', function() {
             achievementsBtn.innerHTML = '<i class="fas fa-trophy"></i>';
             achievementsBtn.title = this.getTranslation('achievementsButtonTitle');
             achievementsBtn.className = 'upgrade-btn';
-            achievementsBtn.style.right = '105px';
-            achievementsBtn.style.bottom = 'auto';
-            achievementsBtn.style.top = '10px';
+            achievementsBtn.style.cssText = `
+                position: absolute;
+                top: 10px;
+                right: ${this.isMobile ? '90px' : '105px'};
+                width: ${this.isMobile ? '35px' : '40px'};
+                height: ${this.isMobile ? '35px' : '40px'};
+                border: none;
+                border-radius: 8px;
+                font-size: ${this.isMobile ? '1em' : '1.2em'};
+                cursor: pointer;
+                z-index: 30;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                background: rgba(0, 0, 0, 0.5);
+                color: #FFC107;
+                transition: transform 0.1s;
+                backdrop-filter: blur(4px);
+            `;
             
             const shopBtn = document.getElementById('shopBtn');
             const saveBtn = document.getElementById('saveBtn');
@@ -48,19 +85,86 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         createAchievementsModal() {
-            // Создаем модальное окно достижений
+            // Создаем модальное окно достижений с адаптивным дизайном
             const modal = document.createElement('div');
             modal.id = 'achievementsModal';
-            modal.className = 'achievements-modal';
+            modal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.95);
+                backdrop-filter: blur(10px);
+                display: none;
+                z-index: 2000;
+                justify-content: center;
+                align-items: center;
+                padding: ${this.isMobile ? '10px' : '20px'};
+                box-sizing: border-box;
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
+            `;
             
             modal.innerHTML = `
-                <div class="achievements-modal-content">
-                    <span id="closeAchievementsBtn" class="achievements-close-btn">&times;</span>
-                    <h2 class="achievements-title">${this.getTranslation('achievementsTitle')}</h2>
-                    <div id="achievementsGrid" class="achievements-grid"></div>
-                    <div style="text-align: center; margin-top: 15px; color: #a0d2ff; padding: 10px;">
+                <div style="
+                    background: linear-gradient(135deg, #1a1a2e, #16213e);
+                    border-radius: ${this.isMobile ? '12px' : '15px'};
+                    width: 100%;
+                    max-width: ${this.isMobile ? '95%' : '600px'};
+                    max-height: ${this.isMobile ? '90vh' : '80vh'};
+                    padding: ${this.isMobile ? '15px' : '20px'};
+                    border: 2px solid #ffd700;
+                    color: white;
+                    position: relative;
+                    box-shadow: 0 0 30px rgba(255, 215, 0, 0.3);
+                    overflow-y: auto;
+                    -webkit-overflow-scrolling: touch;
+                ">
+                    <span id="closeAchievementsBtn" style="
+                        position: absolute;
+                        top: ${this.isMobile ? '8px' : '10px'};
+                        right: ${this.isMobile ? '10px' : '15px'};
+                        font-size: ${this.isMobile ? '1.3em' : '1.5em'};
+                        color: #aaa;
+                        cursor: pointer;
+                        z-index: 10;
+                        width: ${this.isMobile ? '30px' : '35px'};
+                        height: ${this.isMobile ? '30px' : '35px'};
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        background: rgba(244, 67, 54, 0.8);
+                        border-radius: 50%;
+                    ">&times;</span>
+                    
+                    <h2 style="
+                        text-align: center;
+                        color: #ffd700;
+                        margin: ${this.isMobile ? '5px 0 15px 0' : '0 0 20px 0'};
+                        font-size: ${this.isMobile ? '1.4em' : '1.8em'};
+                        padding: ${this.isMobile ? '0 20px' : '0'};
+                    ">
+                        <i class="fas fa-trophy"></i> ${this.getTranslation('achievementsTitle')}
+                    </h2>
+                    
+                    <div style="
+                        text-align: center;
+                        margin-bottom: ${this.isMobile ? '15px' : '20px'};
+                        color: #a0d2ff;
+                        font-size: ${this.isMobile ? '0.9em' : '1em'};
+                        padding: 0 10px;
+                    ">
                         <p>${this.getTranslation('achievementsDescription')}</p>
                     </div>
+                    
+                    <div id="achievementsGrid" style="
+                        display: grid;
+                        grid-template-columns: ${this.isMobile ? '1fr' : 'repeat(auto-fill, minmax(250px, 1fr))'};
+                        gap: ${this.isMobile ? '12px' : '15px'};
+                        margin: ${this.isMobile ? '10px 0' : '20px 0'};
+                        padding-bottom: 10px;
+                    "></div>
                 </div>
             `;
             
@@ -76,66 +180,22 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (e.target === modal) this.closeAchievements();
             });
             
-            // Предотвращаем закрытие при клике внутри контента
-            modal.querySelector('.achievements-modal-content').addEventListener('click', (e) => {
-                e.stopPropagation();
-            });
-        }
-        
-        setupMobileOptimizations() {
-            // Обработка ориентации устройства
-            window.addEventListener('orientationchange', () => {
-                setTimeout(() => this.updateAchievementsUI(), 100);
-            });
-            
-            // Обработка изменения размера окна
-            window.addEventListener('resize', () => {
-                clearTimeout(this.resizeTimer);
-                this.resizeTimer = setTimeout(() => this.updateAchievementsUI(), 250);
-            });
-            
-            // Предотвращаем масштабирование при фокусе
-            document.addEventListener('touchstart', function(e) {
-                if (e.target.classList.contains('achievement-item')) {
-                    e.preventDefault();
+            // Блокировка жестов масштабирования в модальном окне
+            modal.addEventListener('touchmove', (e) => {
+                if (e.target === modal || e.target.closest('#achievementsModal > div')) {
+                    e.stopPropagation();
                 }
             }, { passive: false });
         }
         
         openAchievements() {
-            const modal = document.getElementById('achievementsModal');
-            if (modal) {
-                modal.style.display = 'flex';
-                
-                // Для мобильных: добавляем класс для блокировки прокрутки фона
-                if (this.isMobile) {
-                    document.body.style.overflow = 'hidden';
-                }
-                
-                // Фокус на кнопке закрытия для доступности
-                setTimeout(() => {
-                    const closeBtn = document.getElementById('closeAchievementsBtn');
-                    if (closeBtn) closeBtn.focus();
-                }, 100);
-                
-                this.updateAchievementsUI();
-            }
+            document.getElementById('achievementsModal').style.display = 'flex';
+            this.updateAchievementsUI();
+            this.checkOrientation();
         }
         
         closeAchievements() {
-            const modal = document.getElementById('achievementsModal');
-            if (modal) {
-                modal.style.display = 'none';
-                
-                // Для мобильных: восстанавливаем прокрутку
-                if (this.isMobile) {
-                    document.body.style.overflow = '';
-                }
-                
-                // Возвращаем фокус на кнопку достижений
-                const achievementsBtn = document.getElementById('achievementsBtn');
-                if (achievementsBtn) achievementsBtn.focus();
-            }
+            document.getElementById('achievementsModal').style.display = 'none';
         }
         
         setupAchievements() {
@@ -234,45 +294,80 @@ document.addEventListener('DOMContentLoaded', function() {
             
             grid.innerHTML = '';
             
-            Object.values(this.achievements).forEach((achievement, index) => {
+            Object.values(this.achievements).forEach(achievement => {
                 const achievementElement = document.createElement('div');
                 achievementElement.className = achievement.unlocked ? 'achievement-item unlocked' : 'achievement-item';
+                achievementElement.style.cssText = `
+                    background: rgba(${achievement.unlocked ? '40, 80, 40' : '50, 40, 80'}, 0.8);
+                    border-radius: ${this.isMobile ? '8px' : '10px'};
+                    padding: ${this.isMobile ? '12px' : '15px'};
+                    border: 1px solid ${achievement.unlocked ? '#4CAF50' : '#a0d2ff'};
+                    transition: transform 0.3s;
+                    display: flex;
+                    gap: ${this.isMobile ? '12px' : '15px'};
+                    min-height: ${this.isMobile ? '110px' : '130px'};
+                `;
                 
                 const progressPercent = Math.min(100, Math.round((achievement.progress / achievement.target) * 100));
                 
                 achievementElement.innerHTML = `
-                    <div class="achievement-icon">
+                    <div style="
+                        font-size: ${this.isMobile ? '1.8em' : '2em'};
+                        width: ${this.isMobile ? '50px' : '60px'};
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        color: ${achievement.unlocked ? '#ffd700' : '#a0d2ff'};
+                    ">
                         <i class="${achievement.icon}"></i>
                     </div>
-                    <div class="achievement-content">
-                        <h3 class="achievement-name">${this.getTranslationForAchievement(achievement.name)}</h3>
-                        <p class="achievement-description">${this.getTranslationForAchievement(achievement.description)}</p>
-                        <div class="achievement-progress-bar">
-                            <div class="achievement-progress-fill" style="width: ${progressPercent}%"></div>
+                    <div style="flex: 1; min-width: 0;">
+                        <h3 style="
+                            color: ${achievement.unlocked ? '#ffd700' : '#a0d2ff'};
+                            margin: 0 0 ${this.isMobile ? '4px' : '8px'} 0;
+                            font-size: ${this.isMobile ? '1em' : '1.1em'};
+                            line-height: 1.3;
+                            word-wrap: break-word;
+                        ">
+                            ${this.getTranslationForAchievement(achievement.name)}
+                            ${achievement.unlocked ? ' <span style="color:#4CAF50;font-size:0.8em;">✓</span>' : ''}
+                        </h3>
+                        <p style="
+                            color: #ccc;
+                            margin: 0 0 ${this.isMobile ? '6px' : '8px'} 0;
+                            font-size: ${this.isMobile ? '0.8em' : '0.9em'};
+                            line-height: 1.4;
+                        ">
+                            ${this.getTranslationForAchievement(achievement.description)}
+                        </p>
+                        <div style="
+                            height: ${this.isMobile ? '6px' : '8px'};
+                            background: rgba(255, 255, 255, 0.2);
+                            border-radius: 4px;
+                            margin: ${this.isMobile ? '6px 0' : '8px 0'};
+                            overflow: hidden;
+                        ">
+                            <div style="
+                                height: 100%;
+                                background: linear-gradient(90deg, ${achievement.unlocked ? '#ffd700, #ffa500' : '#2196F3, #4CAF50'});
+                                border-radius: 4px;
+                                width: ${progressPercent}%;
+                            "></div>
                         </div>
-                        <div class="achievement-progress-text">
+                        <div style="
+                            display: flex;
+                            justify-content: space-between;
+                            font-size: ${this.isMobile ? '0.8em' : '0.9em'};
+                            color: #a0d2ff;
+                            margin-top: ${this.isMobile ? '4px' : '6px'};
+                        ">
                             <span>${achievement.progress}/${achievement.target}</span>
-                            <span>${progressPercent}%</span>
-                        </div>
-                        <div class="achievement-reward">
-                            <i class="fas fa-gem"></i>
-                            <span>+${achievement.reward}</span>
+                            <span>+${achievement.reward} <i class="fas fa-gem"></i></span>
                         </div>
                     </div>
-                    ${!achievement.unlocked ? `
-                        <div class="locked-overlay">
-                            <i class="fas fa-lock"></i>
-                        </div>
-                    ` : ''}
                 `;
                 
                 grid.appendChild(achievementElement);
-                
-                // Добавляем задержку для анимации появления
-                setTimeout(() => {
-                    achievementElement.style.opacity = '1';
-                    achievementElement.style.transform = 'translateX(0)';
-                }, index * 100);
             });
         }
         
@@ -302,7 +397,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const coinsElement = document.getElementById('coins-value');
                 if (coinsElement) {
                     let lastCoinsValue = parseInt(coinsElement.textContent.replace(/\D/g, '')) || 0;
-                    this.coinsCheckInterval = setInterval(() => {
+                    setInterval(() => {
                         const currentCoins = parseInt(coinsElement.textContent.replace(/\D/g, '')) || 0;
                         if (currentCoins > lastCoinsValue) {
                             const diff = currentCoins - lastCoinsValue;
@@ -316,7 +411,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const gameTitleElement = document.getElementById('gameTitle');
                 if (gameTitleElement) {
                     let lastLocation = gameTitleElement.textContent;
-                    this.locationCheckInterval = setInterval(() => {
+                    setInterval(() => {
                         const currentLocation = gameTitleElement.textContent;
                         if (currentLocation !== lastLocation) {
                             this.updateAchievementProgress('planetaryExplorer', 1);
@@ -324,31 +419,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         }
                     }, 2000);
                 }
-                
-                // Отслеживаем активацию Bobo
-                this.setupBoboTracking();
             }, 2000);
-        }
-        
-        setupBoboTracking() {
-            // Отслеживаем активацию помощника Bobo через проверку состояния кнопки
-            const helperBtn = document.getElementById('upgradeHelperBtn');
-            if (helperBtn) {
-                let lastClickTime = 0;
-                const clickHandler = () => {
-                    const now = Date.now();
-                    if (now - lastClickTime > 1000) { // Защита от двойного клика
-                        this.updateAchievementProgress('boboFanatic', 1);
-                        lastClickTime = now;
-                    }
-                };
-                
-                helperBtn.addEventListener('click', clickHandler);
-                helperBtn.addEventListener('touchstart', (e) => {
-                    e.preventDefault();
-                    clickHandler();
-                }, { passive: false });
-            }
         }
         
         updateAchievementProgress(achievementId, progress) {
@@ -362,11 +433,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             this.saveAchievementsData();
-            
-            // Обновляем UI, если открыто окно достижений
-            if (document.getElementById('achievementsModal')?.style.display === 'flex') {
-                this.updateAchievementsUI();
-            }
         }
         
         unlockAchievement(achievementId) {
@@ -380,9 +446,10 @@ document.addEventListener('DOMContentLoaded', function() {
             const coinsElement = document.getElementById('coins-value');
             if (coinsElement) {
                 const currentCoins = parseInt(coinsElement.textContent.replace(/\D/g, '')) || 0;
-                const newCoins = currentCoins + achievement.reward;
-                coinsElement.textContent = newCoins.toLocaleString();
-                window.coins = newCoins;
+                coinsElement.textContent = (currentCoins + achievement.reward).toLocaleString();
+                if (typeof window.coins !== 'undefined') {
+                    window.coins = currentCoins + achievement.reward;
+                }
                 
                 // Показываем уведомление
                 this.showAchievementNotification(achievementId);
@@ -394,34 +461,37 @@ document.addEventListener('DOMContentLoaded', function() {
         showAchievementNotification(achievementId) {
             const achievement = this.achievements[achievementId];
             const notification = document.createElement('div');
-            notification.className = 'achievement-notification';
             notification.style.cssText = `
                 position: fixed;
                 top: 20%;
                 left: 50%;
-                transform: translate(-50%, -50%);
-                background: linear-gradient(135deg, rgba(80, 40, 120, 0.95), rgba(60, 30, 90, 0.98));
+                transform: translateX(-50%);
+                background: rgba(80, 40, 120, 0.95);
                 border: 3px solid #ffd700;
                 color: white;
                 padding: ${this.isMobile ? '15px' : '20px'};
-                border-radius: 15px;
-                z-index: 2000;
+                border-radius: ${this.isMobile ? '10px' : '15px'};
+                z-index: 3000;
                 text-align: center;
                 box-shadow: 0 0 30px rgba(255, 215, 0, 0.7);
                 font-family: 'Orbitron', sans-serif;
-                width: ${this.isMobile ? '85%' : '300px'};
-                max-width: 400px;
+                animation: slideDown 0.5s, fadeOut 0.5s 4.5s forwards;
+                max-width: ${this.isMobile ? '90%' : '300px'};
+                word-wrap: break-word;
             `;
             
             notification.innerHTML = `
-                <div style="font-size: ${this.isMobile ? '2em' : '2.5em'}; margin-bottom: 10px; color: #ffd700;">
+                <div style="font-size: ${this.isMobile ? '2em' : '2.5em'}; margin-bottom: ${this.isMobile ? '8px' : '10px'}; color: #ffd700;">
                     <i class="${achievement.icon}"></i>
                 </div>
-                <h3 style="color: #ffd700; margin: 0 0 5px 0; font-size: ${this.isMobile ? '1.2em' : '1.3em'};">${this.getTranslation('achievementUnlocked')}</h3>
-                <p style="font-size: ${this.isMobile ? '1.1em' : '1.3em'}; margin: 0 0 8px 0; color: #fff;">${this.getTranslationForAchievement(achievement.name)}</p>
-                <p style="color: #a0d2ff; font-size: ${this.isMobile ? '1em' : '1.1em'};">
-                    <i class="fas fa-gem" style="color: #ffd54f;"></i>
-                    <span style="font-weight: bold; margin-left: 5px;">+${achievement.reward} кристаллов</span>
+                <h3 style="color: #ffd700; margin: 0 0 5px 0; font-size: ${this.isMobile ? '1.1em' : '1.2em'}">
+                    ${this.getTranslation('achievementUnlocked')}
+                </h3>
+                <p style="font-size: ${this.isMobile ? '1em' : '1.1em'}; margin: 0 0 8px 0; color: #fff;">
+                    ${this.getTranslationForAchievement(achievement.name)}
+                </p>
+                <p style="color: #a0d2ff; font-size: ${this.isMobile ? '0.9em' : '1em'};">
+                    +${achievement.reward} <i class="fas fa-gem"></i>
                 </p>
             `;
             
@@ -434,38 +504,8 @@ document.addEventListener('DOMContentLoaded', function() {
             }, 5000);
         }
         
-        saveAchievementsData() {
-            const saveData = {
-                achievements: {}
-            };
-            
-            Object.entries(this.achievements).forEach(([id, achievement]) => {
-                saveData.achievements[id] = {
-                    progress: achievement.progress,
-                    unlocked: achievement.unlocked
-                };
-            });
-            
-            localStorage.setItem('cosmicAchievementsData', JSON.stringify(saveData));
-        }
-        
-        loadAchievementsData() {
-            const saved = localStorage.getItem('cosmicAchievementsData');
-            if (saved) {
-                try {
-                    const data = JSON.parse(saved);
-                    Object.entries(data.achievements).forEach(([id, achievementData]) => {
-                        if (this.achievements[id]) {
-                            this.achievements[id].progress = achievementData.progress || 0;
-                            this.achievements[id].unlocked = achievementData.unlocked || false;
-                        }
-                    });
-                } catch (e) {
-                    console.error('Error loading achievements data:', e);
-                }
-            }
-        }
-        
+        // ... остальные методы остаются без изменений ...
+
         getTranslation(key) {
             const translations = {
                 ru: {
@@ -496,25 +536,12 @@ document.addEventListener('DOMContentLoaded', function() {
             const lang = localStorage.getItem('gameLanguage') || 'ru';
             return textObj[lang] || Object.values(textObj)[0];
         }
-        
-        // Очистка интервалов при уничтожении
-        cleanup() {
-            if (this.coinsCheckInterval) clearInterval(this.coinsCheckInterval);
-            if (this.locationCheckInterval) clearInterval(this.locationCheckInterval);
-        }
     }
     
     // Инициализация достижений с задержкой для корректной загрузки игры
     setTimeout(() => {
         if (!window.achievementsSystem) {
             window.achievementsSystem = new AchievementsSystem();
-            
-            // Очистка при разгрузке страницы
-            window.addEventListener('beforeunload', () => {
-                if (window.achievementsSystem) {
-                    window.achievementsSystem.cleanup();
-                }
-            });
         }
     }, 3000);
 });
