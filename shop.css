@@ -1,0 +1,33 @@
+#shopBtn {
+    position: absolute;
+    top: 10px;
+    right: 60px;
+    width: 40px;
+    height: 40px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.2em;
+    cursor: pointer;
+    z-index: 30;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.5);
+    color: #ffd700;
+    transition: transform 0.1s;
+    backdrop-filter: blur(4px);
+}
+
+#shopBtn:active {
+    transform: scale(0.92);
+}
+
+.buy-bonus-btn:active {
+    transform: scale(0.95);
+}
+
+.buy-bonus-btn:disabled {
+    background: linear-gradient(135deg, #666, #444);
+    cursor: not-allowed;
+    opacity: 0.7;
+}
