@@ -4,38 +4,11 @@ document.addEventListener('DOMContentLoaded', function() {
     
     class ShopSystem {
         constructor() {
-            this.isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
             this.initShopButton();
             this.createShopModal();
             this.loadShopData();
             this.setupBonuses();
-            this.setupMobileAdaptation();
-        }
-        
-        setupMobileAdaptation() {
-            // Проверяем ориентацию устройства
-            this.checkOrientation();
-            window.addEventListener('resize', () => this.checkOrientation());
-            window.addEventListener('orientationchange', () => this.checkOrientation());
-        }
-        
-        checkOrientation() {
-            const modalContent = document.querySelector('#shopModal > div');
-            if (!modalContent) return;
-            
-            if (this.isMobile) {
-                if (window.innerHeight < window.innerWidth) {
-                    // Landscape режим
-                    modalContent.style.maxWidth = '90%';
-                    modalContent.style.maxHeight = '95vh';
-                    modalContent.style.padding = '15px';
-                } else {
-                    // Portrait режим
-                    modalContent.style.maxWidth = '95%';
-                    modalContent.style.maxHeight = '85vh';
-                    modalContent.style.padding = '12px';
-                }
-            }
+            this.setupMobileOptimizations();
         }
         
         initShopButton() {
@@ -45,25 +18,9 @@ document.addEventListener('DOMContentLoaded', function() {
             shopBtn.innerHTML = '<i class="fas fa-store"></i>';
             shopBtn.title = this.getTranslation('shopButtonTitle');
             shopBtn.className = 'upgrade-btn';
-            shopBtn.style.cssText = `
-                position: absolute;
-                top: 10px;
-                right: ${this.isMobile ? '50px' : '60px'};
-                width: ${this.isMobile ? '35px' : '40px'};
-                height: ${this.isMobile ? '35px' : '40px'};
-                border: none;
-                border-radius: 8px;
-                font-size: ${this.isMobile ? '1em' : '1.2em'};
-                cursor: pointer;
-                z-index: 30;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                background: rgba(0, 0, 0, 0.5);
-                color: #ffd700;
-                transition: transform 0.1s;
-                backdrop-filter: blur(4px);
-            `;
+            shopBtn.style.right = '60px';
+            shopBtn.style.bottom = 'auto';
+            shopBtn.style.top = '10px';
             
             const saveBtn = document.getElementById('saveBtn');
             if (saveBtn && saveBtn.parentNode) {
@@ -78,82 +35,17 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         createShopModal() {
-            // Создаем модальное окно магазина с адаптивным дизайном
+            // Создаем модальное окно магазина
             const modal = document.createElement('div');
             modal.id = 'shopModal';
-            modal.style.cssText = `
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background: rgba(0, 0, 0, 0.95);
-                backdrop-filter: blur(10px);
-                display: none;
-                z-index: 2000;
-                justify-content: center;
-                align-items: center;
-                padding: ${this.isMobile ? '10px' : '20px'};
-                box-sizing: border-box;
-                overflow-y: auto;
-                -webkit-overflow-scrolling: touch;
-            `;
+            modal.className = 'shop-modal';
             
             modal.innerHTML = `
-                <div style="
-                    background: linear-gradient(135deg, #1a1a2e, #16213e);
-                    border-radius: ${this.isMobile ? '12px' : '15px'};
-                    width: 100%;
-                    max-width: ${this.isMobile ? '95%' : '600px'};
-                    max-height: ${this.isMobile ? '90vh' : '80vh'};
-                    padding: ${this.isMobile ? '15px' : '20px'};
-                    border: 2px solid #ffd700;
-                    color: white;
-                    position: relative;
-                    box-shadow: 0 0 30px rgba(255, 215, 0, 0.3);
-                    overflow-y: auto;
-                    -webkit-overflow-scrolling: touch;
-                ">
-                    <span id="closeShopBtn" style="
-                        position: absolute;
-                        top: ${this.isMobile ? '8px' : '10px'};
-                        right: ${this.isMobile ? '10px' : '15px'};
-                        font-size: ${this.isMobile ? '1.3em' : '1.5em'};
-                        color: #aaa;
-                        cursor: pointer;
-                        z-index: 10;
-                        width: ${this.isMobile ? '30px' : '35px'};
-                        height: ${this.isMobile ? '30px' : '35px'};
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                        background: rgba(244, 67, 54, 0.8);
-                        border-radius: 50%;
-                    ">&times;</span>
-                    
-                    <h2 style="
-                        text-align: center;
-                        color: #ffd700;
-                        margin: ${this.isMobile ? '5px 0 15px 0' : '0 0 20px 0'};
-                        font-size: ${this.isMobile ? '1.4em' : '1.8em'};
-                        padding: ${this.isMobile ? '0 20px' : '0'};
-                    ">
-                        <i class="fas fa-store"></i> ${this.getTranslation('shopTitle')}
-                    </h2>
-                    
-                    <div id="shopItemsContainer" style="
-                        display: grid;
-                        grid-template-columns: ${this.isMobile ? '1fr' : 'repeat(auto-fill, minmax(250px, 1fr))'};
-                        gap: ${this.isMobile ? '12px' : '15px'};
-                        margin: ${this.isMobile ? '10px 0' : '20px 0'};
-                        padding-bottom: 10px;
-                    "></div>
-                    
-                    <div id="activeBonusesContainer" style="
-                        margin-top: ${this.isMobile ? '15px' : '20px'};
-                        padding-top: ${this.isMobile ? '10px' : '15px'};
-                        border-top: 1px solid rgba(255, 215, 0, 0.3);
-                    "></div>
+                <div class="shop-modal-content">
+                    <span id="closeShopBtn" class="shop-close-btn">&times;</span>
+                    <h2 class="shop-title">${this.getTranslation('shopTitle')}</h2>
+                    <div id="shopItemsContainer" class="shop-items-container"></div>
+                    <div id="activeBonusesContainer" class="active-bonuses-container"></div>
                 </div>
             `;
             
@@ -169,23 +61,69 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (e.target === modal) this.closeShop();
             });
             
-            // Блокировка жестов масштабирования в модальном окне
-            modal.addEventListener('touchmove', (e) => {
-                if (e.target === modal || e.target.closest('#shopModal > div')) {
-                    // Разрешаем скроллинг только внутри модального окна
-                    e.stopPropagation();
+            // Предотвращаем закрытие при клике внутри контента
+            modal.querySelector('.shop-modal-content').addEventListener('click', (e) => {
+                e.stopPropagation();
+            });
+        }
+        
+        setupMobileOptimizations() {
+            // Оптимизации для мобильных устройств
+            this.isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            
+            // Предотвращаем масштабирование при фокусе на инпутах
+            document.addEventListener('touchstart', function(e) {
+                if (e.target.classList.contains('buy-bonus-btn')) {
+                    e.preventDefault();
                 }
             }, { passive: false });
+            
+            // Обработка ориентации устройства
+            window.addEventListener('orientationchange', () => {
+                setTimeout(() => this.updateShopUI(), 100);
+            });
+            
+            // Обработка изменения размера окна
+            window.addEventListener('resize', () => {
+                clearTimeout(this.resizeTimer);
+                this.resizeTimer = setTimeout(() => this.updateShopUI(), 250);
+            });
         }
         
         openShop() {
-            document.getElementById('shopModal').style.display = 'flex';
-            this.updateShopUI();
-            this.checkOrientation();
+            const modal = document.getElementById('shopModal');
+            if (modal) {
+                modal.style.display = 'flex';
+                
+                // Для мобильных: добавляем класс для блокировки прокрутки фона
+                if (this.isMobile) {
+                    document.body.style.overflow = 'hidden';
+                }
+                
+                // Фокус на кнопке закрытия для доступности
+                setTimeout(() => {
+                    const closeBtn = document.getElementById('closeShopBtn');
+                    if (closeBtn) closeBtn.focus();
+                }, 100);
+                
+                this.updateShopUI();
+            }
         }
         
         closeShop() {
-            document.getElementById('shopModal').style.display = 'none';
+            const modal = document.getElementById('shopModal');
+            if (modal) {
+                modal.style.display = 'none';
+                
+                // Для мобильных: восстанавливаем прокрутку
+                if (this.isMobile) {
+                    document.body.style.overflow = '';
+                }
+                
+                // Возвращаем фокус на кнопку магазина
+                const shopBtn = document.getElementById('shopBtn');
+                if (shopBtn) shopBtn.focus();
+            }
         }
         
         setupBonuses() {
@@ -266,7 +204,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         zh: "接下来10个方块有50%几率为稀有"
                     },
                     cost: 400,
-                    duration: 0,
+                    duration: 0, // Длительность определяется количеством блоков
                     isActive: false,
                     blocksLeft: 0
                 }
@@ -275,100 +213,58 @@ document.addEventListener('DOMContentLoaded', function() {
         
         updateShopUI() {
             const container = document.getElementById('shopItemsContainer');
+            const activeContainer = document.getElementById('activeBonusesContainer');
+            if (!container || !activeContainer) return;
+            
             container.innerHTML = '';
             
             Object.entries(this.bonuses).forEach(([id, bonus]) => {
                 const bonusElement = document.createElement('div');
-                bonusElement.className = 'shop-bonus-item';
-                bonusElement.style.cssText = `
-                    background: rgba(50, 40, 80, 0.8);
-                    border-radius: ${this.isMobile ? '8px' : '10px'};
-                    padding: ${this.isMobile ? '12px' : '15px'};
-                    border: 1px solid #a0d2ff;
-                    transition: transform 0.3s;
-                    min-height: ${this.isMobile ? '120px' : '140px'};
-                    display: flex;
-                    flex-direction: column;
-                    justify-content: space-between;
-                `;
+                bonusElement.className = 'bonus-item';
                 
                 const isActive = bonus.isActive && ((bonus.endTime > Date.now()) || (bonus.blocksLeft > 0));
+                const buttonText = isActive ? this.getTranslation('activeButton') : this.getTranslation('buyButton');
+                const buttonDisabled = isActive || (this.getCurrentCoins() < bonus.cost);
                 
                 bonusElement.innerHTML = `
-                    <div style="flex: 1;">
-                        <h3 style="
-                            color: #ffd700;
-                            margin: 0 0 8px 0;
-                            font-size: ${this.isMobile ? '1em' : '1.1em'};
-                            line-height: 1.3;
-                        ">
-                            ${this.getTranslationForBonus(bonus.name)}
-                            ${isActive ? ' <span style="color:#4CAF50;font-size:0.8em;">(АКТИВЕН)</span>' : ''}
-                        </h3>
-                        <p style="
-                            color: #a0d2ff;
-                            margin: 0 0 ${this.isMobile ? '8px' : '10px'} 0;
-                            font-size: ${this.isMobile ? '0.85em' : '0.9em'};
-                            line-height: 1.4;
-                        ">
-                            ${this.getTranslationForBonus(bonus.description)}
-                        </p>
+                    <h3 class="bonus-title">${this.getTranslationForBonus(bonus.name)}</h3>
+                    <p class="bonus-description">${this.getTranslationForBonus(bonus.description)}</p>
+                    <div class="bonus-cost">
+                        <i class="fas fa-gem"></i>
+                        <span>${bonus.cost.toLocaleString()}</span>
                     </div>
-                    
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <div style="font-weight: bold; color: #a0d2ff; font-size: ${this.isMobile ? '1em' : '1.1em'}">
-                            ${bonus.cost.toLocaleString()} <i class="fas fa-gem"></i>
-                        </div>
-                        <button class="buy-bonus-btn" data-id="${id}" style="
-                            background: ${isActive ? 'linear-gradient(135deg, #666, #444)' : 'linear-gradient(135deg, #4a3d86, #6a5add)'};
-                            color: white;
-                            border: none;
-                            border-radius: 6px;
-                            padding: ${this.isMobile ? '6px 12px' : '8px 16px'};
-                            cursor: ${isActive ? 'not-allowed' : 'pointer'};
-                            font-family: 'Orbitron', sans-serif;
-                            transition: transform 0.1s;
-                            font-size: ${this.isMobile ? '0.85em' : '0.9em'};
-                            min-height: ${this.isMobile ? '36px' : '40px'};
-                            min-width: 80px;
-                        ">
-                            ${isActive ? this.getTranslation('activeButton') : this.getTranslation('buyButton')}
-                        </button>
-                    </div>
+                    <button class="buy-bonus-btn" data-id="${id}" 
+                            ${buttonDisabled ? 'disabled' : ''}
+                            ${isActive ? 'class="active"' : ''}>
+                        ${buttonText}
+                    </button>
                 `;
                 
                 container.appendChild(bonusElement);
                 
-                if (isActive) {
-                    bonusElement.style.borderColor = '#ffd700';
-                    bonusElement.style.boxShadow = '0 0 10px rgba(255, 215, 0, 0.3)';
+                // Добавляем обработчик с учетом мобильных устройств
+                const button = bonusElement.querySelector('.buy-bonus-btn');
+                if (button && !button.disabled) {
+                    button.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        this.buyBonus(id);
+                    });
+                    
+                    button.addEventListener('touchstart', (e) => {
+                        e.preventDefault();
+                        this.buyBonus(id);
+                    }, { passive: false });
                 }
             });
             
             this.updateActiveBonusesUI();
-            
-            // Добавляем обработчики для кнопок
-            document.querySelectorAll('.buy-bonus-btn').forEach(btn => {
-                if (!btn.disabled) {
-                    btn.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        const bonusId = e.target.dataset.id;
-                        this.buyBonus(bonusId);
-                    });
-                    btn.addEventListener('touchstart', (e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        const bonusId = e.target.dataset.id;
-                        this.buyBonus(bonusId);
-                    }, { passive: false });
-                }
-            });
         }
         
         updateActiveBonusesUI() {
             const container = document.getElementById('activeBonusesContainer');
-            container.innerHTML = '<h3 style="color: #ffd700; margin: 0 0 10px 0; font-size: ' + (this.isMobile ? '1.1em' : '1.2em') + ';">' + 
-                                  this.getTranslation('activeBonuses') + '</h3>';
+            if (!container) return;
+            
+            container.innerHTML = '<h3 style="color: #ffd700; margin-bottom: 10px;">' + this.getTranslation('activeBonuses') + '</h3>';
             
             let hasActive = false;
             Object.entries(this.bonuses).forEach(([id, bonus]) => {
@@ -376,18 +272,22 @@ document.addEventListener('DOMContentLoaded', function() {
                     if ((bonus.endTime > Date.now()) || (bonus.blocksLeft > 0)) {
                         hasActive = true;
                         const timeLeft = bonus.endTime ? Math.ceil((bonus.endTime - Date.now()) / 1000) : bonus.blocksLeft;
+                        const unit = bonus.endTime ? 'сек' : 'блоков';
+                        
                         const bonusElement = document.createElement('div');
                         bonusElement.style.cssText = `
                             background: rgba(70, 60, 100, 0.7);
-                            padding: ${this.isMobile ? '6px' : '8px'};
-                            margin: 4px 0;
+                            padding: 8px 12px;
+                            margin: 5px 0;
                             border-radius: 5px;
                             border-left: 3px solid #ffd700;
-                            font-size: ${this.isMobile ? '0.9em' : '1em'};
+                            display: flex;
+                            justify-content: space-between;
+                            align-items: center;
                         `;
                         bonusElement.innerHTML = `
-                            <strong>${this.getTranslationForBonus(bonus.name)}</strong>: 
-                            ${bonus.endTime ? `${timeLeft}сек` : `${timeLeft} блоков`}
+                            <strong style="color: #a0d2ff;">${this.getTranslationForBonus(bonus.name)}</strong>
+                            <span style="color: #ffd700;">${timeLeft} ${unit}</span>
                         `;
                         container.appendChild(bonusElement);
                     } else {
@@ -397,26 +297,26 @@ document.addEventListener('DOMContentLoaded', function() {
             });
             
             if (!hasActive) {
-                container.innerHTML += `<p style="color: #a0d2ff; font-style: italic; text-align: center; padding: 10px 0;">
-                    ${this.getTranslation('noActiveBonuses')}
-                </p>`;
+                container.innerHTML += `<p style="color: #a0d2ff; text-align: center; padding: 10px;">${this.getTranslation('noActiveBonuses')}</p>`;
             }
+        }
+        
+        getCurrentCoins() {
+            const coinsElement = document.getElementById('coins-value');
+            if (!coinsElement) return 0;
+            return parseInt(coinsElement.textContent.replace(/\D/g, '')) || 0;
         }
         
         buyBonus(bonusId) {
             const bonus = this.bonuses[bonusId];
-            const coinsElement = document.getElementById('coins-value');
-            
-            if (!coinsElement) return;
-            
-            const currentCoins = parseInt(coinsElement.textContent.replace(/\D/g, '')) || 0;
+            const currentCoins = this.getCurrentCoins();
             
             if (currentCoins >= bonus.cost) {
                 // Вычитаем кристаллы
-                const newCoins = currentCoins - bonus.cost;
-                coinsElement.textContent = newCoins.toLocaleString();
-                if (typeof window.coins !== 'undefined') {
-                    window.coins = newCoins;
+                const coinsElement = document.getElementById('coins-value');
+                if (coinsElement) {
+                    coinsElement.textContent = (currentCoins - bonus.cost).toLocaleString();
+                    window.coins = currentCoins - bonus.cost;
                 }
                 
                 // Активируем бонус
@@ -428,7 +328,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Сохраняем состояние
                 this.saveShopData();
                 
-                // Показываем уведомление
+                // Показываем подтверждение
                 this.showBonusNotification(bonusId);
             } else {
                 this.showTooltip(this.getTranslation('notEnoughCrystals'));
@@ -436,8 +336,165 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
         
-        // ... остальные методы остаются без изменений ...
-
+        activateBonus(bonusId) {
+            const bonus = this.bonuses[bonusId];
+            bonus.isActive = true;
+            
+            switch(bonusId) {
+                case 'doubleCrystals':
+                    this.applyDoubleCrystalsBonus(bonus);
+                    break;
+                case 'increasedPower':
+                    this.applyIncreasedPowerBonus(bonus);
+                    break;
+                case 'criticalBoost':
+                    this.applyCriticalBoostBonus(bonus);
+                    break;
+                case 'timeSlow':
+                    this.applyTimeSlowBonus(bonus);
+                    break;
+                case 'energySurge':
+                    this.applyEnergySurgeBonus(bonus);
+                    break;
+            }
+        }
+        
+        applyDoubleCrystalsBonus(bonus) {
+            bonus.endTime = Date.now() + bonus.duration;
+            
+            // Сохраняем оригинальную функцию добавления кристаллов
+            const originalAddCoins = window.addCoins || ((amount) => {
+                const coinsElement = document.getElementById('coins-value');
+                if (!coinsElement) return;
+                let current = parseInt(coinsElement.textContent.replace(/\D/g, '')) || 0;
+                coinsElement.textContent = (current + amount).toLocaleString();
+                window.coins = current + amount;
+            });
+            
+            // Переопределяем функцию для двойных кристаллов
+            window.addCoins = (amount) => {
+                if (this.bonuses.doubleCrystals.isActive && this.bonuses.doubleCrystals.endTime > Date.now()) {
+                    originalAddCoins(amount * 2);
+                } else {
+                    originalAddCoins(amount);
+                    window.addCoins = originalAddCoins;
+                }
+            };
+            
+            // Проверка окончания бонуса
+            setTimeout(() => {
+                if (this.bonuses.doubleCrystals.isActive && this.bonuses.doubleCrystals.endTime <= Date.now()) {
+                    this.bonuses.doubleCrystals.isActive = false;
+                    window.addCoins = originalAddCoins;
+                    this.updateShopUI();
+                    this.saveShopData();
+                }
+            }, bonus.duration + 100);
+        }
+        
+        applyIncreasedPowerBonus(bonus) {
+            bonus.endTime = Date.now() + bonus.duration;
+            
+            const clickPowerElement = document.getElementById('clickPower-value');
+            if (clickPowerElement) {
+                const originalClickPower = parseInt(clickPowerElement.textContent || '1');
+                clickPowerElement.textContent = Math.round(originalClickPower * 1.5);
+                
+                // Проверка окончания бонуса
+                setTimeout(() => {
+                    if (this.bonuses.increasedPower.isActive && this.bonuses.increasedPower.endTime <= Date.now()) {
+                        this.bonuses.increasedPower.isActive = false;
+                        clickPowerElement.textContent = originalClickPower;
+                        this.updateShopUI();
+                        this.saveShopData();
+                    }
+                }, bonus.duration + 100);
+            }
+        }
+        
+        applyCriticalBoostBonus(bonus) {
+            bonus.endTime = Date.now() + bonus.duration;
+            
+            const critMultElement = document.getElementById('critMultiplier-value');
+            if (critMultElement) {
+                const originalCritMult = parseFloat(critMultElement.textContent.replace('x', '') || '2.0');
+                critMultElement.textContent = `x${(originalCritMult * 4).toFixed(1)}`;
+                
+                // Проверка окончания бонуса
+                setTimeout(() => {
+                    if (this.bonuses.criticalBoost.isActive && this.bonuses.criticalBoost.endTime <= Date.now()) {
+                        this.bonuses.criticalBoost.isActive = false;
+                        critMultElement.textContent = `x${originalCritMult.toFixed(1)}`;
+                        this.updateShopUI();
+                        this.saveShopData();
+                    }
+                }, bonus.duration + 100);
+            }
+        }
+        
+        applyTimeSlowBonus(bonus) {
+            bonus.endTime = Date.now() + bonus.duration;
+            
+            // Уменьшаем скорость блоков
+            if (typeof window.blockSpeed !== 'undefined') {
+                window.blockSpeed = window.blockSpeed * 0.6;
+                
+                // Проверка окончания бонуса
+                setTimeout(() => {
+                    if (this.bonuses.timeSlow.isActive && this.bonuses.timeSlow.endTime <= Date.now()) {
+                        this.bonuses.timeSlow.isActive = false;
+                        window.blockSpeed = window.blockSpeed / 0.6;
+                        this.updateShopUI();
+                        this.saveShopData();
+                    }
+                }, bonus.duration + 100);
+            }
+        }
+        
+        applyEnergySurgeBonus(bonus) {
+            bonus.blocksLeft = 10;
+            
+            // Перехватываем создание блоков
+            if (typeof window.createMovingBlock === 'function') {
+                const originalCreateBlock = window.createMovingBlock;
+                window.createMovingBlock = () => {
+                    if (this.bonuses.energySurge.isActive && this.bonuses.energySurge.blocksLeft > 0) {
+                        // Временно увеличиваем шанс редкого блока
+                        if (typeof window.getRareBlockType === 'function') {
+                            const originalGetRareBlock = window.getRareBlockType;
+                            window.getRareBlockType = () => {
+                                return Math.random() < 0.5 ? 
+                                    Object.keys(window.rareBlocks)[Math.floor(Math.random() * Object.keys(window.rareBlocks).length)] : 
+                                    null;
+                            };
+                            
+                            // Вызываем оригинальное создание блока
+                            const result = originalCreateBlock.call(window);
+                            
+                            // Восстанавливаем оригинальную функцию после создания
+                            window.getRareBlockType = originalGetRareBlock;
+                            
+                            // Уменьшаем счетчик
+                            this.bonuses.energySurge.blocksLeft--;
+                            
+                            // Если это последний блок с бонусом, деактивируем его
+                            if (this.bonuses.energySurge.blocksLeft <= 0) {
+                                this.bonuses.energySurge.isActive = false;
+                                this.updateShopUI();
+                                this.saveShopData();
+                            }
+                            
+                            return result;
+                        }
+                    } else {
+                        // Если бонус закончился, восстанавливаем оригинальную функцию
+                        window.createMovingBlock = originalCreateBlock;
+                        return originalCreateBlock.call(window);
+                    }
+                };
+            }
+        }
+        
         showBonusNotification(bonusId) {
             const bonus = this.bonuses[bonusId];
             const notification = document.createElement('div');
@@ -446,29 +503,23 @@ document.addEventListener('DOMContentLoaded', function() {
                 top: 50%;
                 left: 50%;
                 transform: translate(-50%, -50%);
-                background: rgba(80, 40, 120, 0.95);
+                background: linear-gradient(135deg, rgba(80, 40, 120, 0.95), rgba(60, 30, 90, 0.98));
                 border: 3px solid #ffd700;
                 color: white;
-                padding: ${this.isMobile ? '15px' : '20px'};
-                border-radius: ${this.isMobile ? '10px' : '15px'};
-                z-index: 3000;
+                padding: 20px;
+                border-radius: 15px;
+                z-index: 2000;
                 text-align: center;
                 box-shadow: 0 0 30px rgba(255, 215, 0, 0.7);
                 font-family: 'Orbitron', sans-serif;
-                max-width: ${this.isMobile ? '90%' : '300px'};
-                word-wrap: break-word;
+                width: ${this.isMobile ? '85%' : '300px'};
+                max-width: 400px;
             `;
             
             notification.innerHTML = `
-                <h3 style="color: #ffd700; margin-top: 0; font-size: ${this.isMobile ? '1.2em' : '1.3em'}">
-                    ${this.getTranslation('bonusActivated')}
-                </h3>
-                <p style="font-size: ${this.isMobile ? '1em' : '1.1em'}; margin: 10px 0;">
-                    ${this.getTranslationForBonus(bonus.name)}
-                </p>
-                <p style="color: #a0d2ff; font-size: ${this.isMobile ? '0.9em' : '1em'}">
-                    ${this.getTranslation('duration')}: ${bonus.endTime ? Math.floor(bonus.duration/1000) : bonus.blocksLeft}${bonus.endTime ? 'сек' : ''}
-                </p>
+                <h3 style="color: #ffd700; margin-top: 0; font-size: ${this.isMobile ? '1.2em' : '1.3em'};">${this.getTranslation('bonusActivated')}</h3>
+                <p style="font-size: ${this.isMobile ? '1.1em' : '1.2em'}; margin: 10px 0;">${this.getTranslationForBonus(bonus.name)}</p>
+                <p style="color: #a0d2ff; font-size: ${this.isMobile ? '0.9em' : '1em'};">${this.getTranslation('duration')}: ${Math.floor(bonus.duration/1000)}s</p>
             `;
             
             document.body.appendChild(notification);
@@ -486,7 +537,106 @@ document.addEventListener('DOMContentLoaded', function() {
             }, 2000);
         }
         
-        // ... остальные методы остаются без изменений ...
+        showTooltip(text) {
+            const tooltip = document.getElementById("tooltip");
+            if (tooltip) {
+                tooltip.innerHTML = text;
+                tooltip.style.opacity = "1";
+            }
+        }
+        
+        hideTooltip() {
+            const tooltip = document.getElementById("tooltip");
+            if (tooltip) tooltip.style.opacity = "0";
+        }
+        
+        saveShopData() {
+            const saveData = {
+                bonuses: {}
+            };
+            
+            Object.entries(this.bonuses).forEach(([id, bonus]) => {
+                saveData.bonuses[id] = {
+                    isActive: bonus.isActive,
+                    endTime: bonus.endTime,
+                    blocksLeft: bonus.blocksLeft || 0
+                };
+            });
+            
+            localStorage.setItem('cosmicShopData', JSON.stringify(saveData));
+        }
+        
+        loadShopData() {
+            const saved = localStorage.getItem('cosmicShopData');
+            if (saved) {
+                try {
+                    const data = JSON.parse(saved);
+                    Object.entries(data.bonuses).forEach(([id, bonusData]) => {
+                        if (this.bonuses[id]) {
+                            this.bonuses[id].isActive = bonusData.isActive;
+                            this.bonuses[id].endTime = bonusData.endTime || 0;
+                            this.bonuses[id].blocksLeft = bonusData.blocksLeft || 0;
+                            
+                            // Проверка истекших бонусов
+                            if (this.bonuses[id].isActive) {
+                                if ((this.bonuses[id].endTime > 0 && this.bonuses[id].endTime < Date.now()) || 
+                                    (this.bonuses[id].blocksLeft <= 0 && this.bonuses[id].endTime === 0)) {
+                                    this.bonuses[id].isActive = false;
+                                }
+                            }
+                        }
+                    });
+                } catch (e) {
+                    console.error('Error loading shop data:', e);
+                }
+            }
+        }
+        
+        getTranslation(key) {
+            const translations = {
+                ru: {
+                    shopButtonTitle: "Магазин временных бонусов",
+                    shopTitle: "МАГАЗИН ВРЕМЕННЫХ БОНУСОВ",
+                    buyButton: "Купить",
+                    activeButton: "Активен",
+                    activeBonuses: "Активные бонусы:",
+                    noActiveBonuses: "Нет активных бонусов",
+                    notEnoughCrystals: "Недостаточно кристаллов!",
+                    bonusActivated: "БОНУС АКТИВИРОВАН!",
+                    duration: "Длительность"
+                },
+                en: {
+                    shopButtonTitle: "Temporary bonuses shop",
+                    shopTitle: "TEMPORARY BONUSES SHOP",
+                    buyButton: "Buy",
+                    activeButton: "Active",
+                    activeBonuses: "Active bonuses:",
+                    noActiveBonuses: "No active bonuses",
+                    notEnoughCrystals: "Not enough crystals!",
+                    bonusActivated: "BONUS ACTIVATED!",
+                    duration: "Duration"
+                },
+                zh: {
+                    shopButtonTitle: "限时奖励商店",
+                    shopTitle: "限时奖励商店",
+                    buyButton: "购买",
+                    activeButton: "活动中",
+                    activeBonuses: "活动奖励：",
+                    noActiveBonuses: "没有活动奖励",
+                    notEnoughCrystals: "水晶不足！",
+                    bonusActivated: "奖励已激活！",
+                    duration: "持续时间"
+                }
+            };
+            
+            const lang = localStorage.getItem('gameLanguage') || 'ru';
+            return translations[lang][key] || key;
+        }
+        
+        getTranslationForBonus(textObj) {
+            const lang = localStorage.getItem('gameLanguage') || 'ru';
+            return textObj[lang] || Object.values(textObj)[0];
+        }
     }
     
     // Инициализация магазина
