@@ -2,7 +2,7 @@
  * BackgroundManager — Менеджер 3D-фона с привязкой к прогрессу и перелётам
  * Исправленная версия для GitHub Pages
  */
-import { ParticlesSwarm } from './Sun_System.js';
+import { ParticlesSwarm } from './Sun_System.js'; // ✅ относительный путь
 
 export class BackgroundManager {
   constructor(container, options = {}) {
