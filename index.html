@@ -6,7 +6,7 @@
   <title>Космический Кликер</title>
   <link rel="stylesheet" href="css/styles.css">
   
-  <!-- ✅ Importmap для Three.js (обязательно для ES-модулей) -->
+  <!-- Importmap для Three.js -->
   <script type="importmap">
   {
     "imports": {
@@ -15,110 +15,46 @@
     }
   }
   </script>
-
+  
   <style>
-    /* ✅ Минимальные стили для корректного старта до загрузки CSS */
-    body, html { margin: 0; padding: 0; overflow: hidden; height: 100%; background: #000; }
-    #space-bg-container {
-      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      z-index: 0; pointer-events: none; background: #000;
-    }
-    #game-wrapper {
-      position: relative; z-index: 10; width: 100vw; height: 100vh;
-      display: flex; flex-direction: column;
-    }
+    *, *::before, *::after { box-sizing: border-box; touch-action: manipulation; user-select: none; }
+    body { margin: 0; padding: 0; overflow: hidden; background: #000; width: 100vw; height: 100vh; font-family: 'Orbitron', sans-serif; }
+    #space-bg-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; background: #000; }
+    #game-wrapper { position: relative; z-index: 10; width: 100vw; height: 100vh; display: flex; flex-direction: column; }
     .hidden { display: none !important; }
-    #loading-overlay {
-      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      background: #05050a; color: #4CAF50; font-family: 'Orbitron', sans-serif;
-      z-index: 9999; display: flex; align-items: center; justify-content: center;
-      font-size: 1.2em; transition: opacity 0.5s ease;
-    }
   </style>
 </head>
 <body>
-
-  <!-- 🌌 Экран загрузки -->
-  <div id="loading-overlay">🌌 Инициализация Солнечной системы...</div>
-
-  <!-- 🌌 Контейнер для 3D-фона (НЕ перехватывает клики) -->
   <div id="space-bg-container"></div>
-
-  <!-- 🎮 Игровой интерфейс -->
   <div id="game-wrapper">
-    <header id="header">
-      <h1 id="gameTitle">☿ Меркурий</h1>
-    </header>
-
+    <header id="header"><h1 id="gameTitle">☿ Меркурий</h1></header>
     <div id="hud-left">
       <div class="hud-item"><i>💎</i> Кристаллы: <span id="coins-value">0</span></div>
       <div class="hud-item"><i>👊</i> Сила: <span id="clickPower-value">1</span></div>
       <div class="hud-item"><i>⚡</i> Крит: <span id="critChance-value">0.1%</span></div>
       <div class="hud-item"><i>🔥</i> Множ.крита: <span id="critMultiplier-value">x2.0</span></div>
     </div>
-
-    <div id="progressContainer">
-      <div id="progressBar"></div>
-    </div>
+    <div id="progressContainer"><div id="progressBar"></div></div>
     <div id="progressText">Прогресс: 0.00000 / 0.38710 а.е. (0%)</div>
-
     <button id="saveBtn" title="Сохранить игру">💾</button>
-
-    <!-- 🔽 Кнопки улучшений (справа) -->
-    <button id="upgradeClickBtn" class="upgrade-btn btn-unavailable" title="Увеличить силу удара">
-      👊<span class="upgrade-cost">80</span>
-    </button>
-    <button id="upgradeHelperBtn" class="upgrade-btn btn-unavailable" title="Активировать Bobo">
-      🤖<span class="upgrade-cost">1500</span>
-    </button>
-    <button id="upgradeCritChanceBtn" class="upgrade-btn btn-unavailable" title="Увеличить шанс крита">
-      🎯<span class="upgrade-cost">500</span>
-    </button>
-    <button id="upgradeCritMultBtn" class="upgrade-btn btn-unavailable" title="Увеличить множитель крита">
-      💥<span class="upgrade-cost">800</span>
-    </button>
-    <button id="upgradeHelperDmgBtn" class="upgrade-btn btn-unavailable" title="Увеличить урон помощника">
-      ⚔️<span class="upgrade-cost">1000</span>
-    </button>
-
-    <!-- 🕹️ Игровая зона -->
+    <button id="upgradeClickBtn" class="upgrade-btn btn-unavailable">👊<span class="upgrade-cost">80</span></button>
+    <button id="upgradeHelperBtn" class="upgrade-btn btn-unavailable">🤖<span class="upgrade-cost">1500</span></button>
+    <button id="upgradeCritChanceBtn" class="upgrade-btn btn-unavailable">🎯<span class="upgrade-cost">500</span></button>
+    <button id="upgradeCritMultBtn" class="upgrade-btn btn-unavailable">💥<span class="upgrade-cost">800</span></button>
+    <button id="upgradeHelperDmgBtn" class="upgrade-btn btn-unavailable">⚔️<span class="upgrade-cost">1000</span></button>
     <div id="gameArea"></div>
-
-    <!-- 📢 Уведомления -->
     <div id="levelAnnounce"></div>
-    <div id="penaltyAnnounce" style="display:none;"></div>
     <div id="tooltip" class="tooltip"></div>
-
-    <!-- 🚀 Экран приветствия -->
     <div id="welcomeScreen">
       <h2>🚀 КОСМИЧЕСКИЙ КЛИКЕР</h2>
       <p>Разрушайте восходящие блоки и собирайте космические Кристаллы!</p>
-      <p>Каждый блок требует определённого количества ударов для разрушения.</p>
-      <p>Реалистичная система прогресса:</p>
-      <p>🌌 Астрономические единицы — перемещайтесь по Солнечной системе</p>
-      <p>🪐 9 реальных планет — от Меркурия до Плутона</p>
-      <p>🚀 Улучшения — увеличивайте силу, криты и активируйте помощника</p>
-      <p>✨ Редкие блоки — дают бонусы и огромные награды!</p>
-      <p>⚠️ Если блок уйдёт за экран — вы потеряете часть улучшения!</p>
       <button id="continueBtn" class="btn">Продолжить</button>
       <button id="startBtn" class="btn">Новая игра</button>
       <button id="langBtn-welcome">🇷🇺</button>
     </div>
-
-    <!-- 🛒 Контейнеры для магазина и достижений (инициализируются через JS) -->
-    <div id="shop-container" class="shop-container"></div>
-    <div id="achievements-container" class="achievements-container"></div>
   </div>
 
-  <!-- 🔊 Звуки (замените пути на реальные файлы) -->
-  <audio id="clickSound" src="audio/click.mp3" preload="auto"></audio>
-  <audio id="breakSound" src="audio/break.mp3" preload="auto"></audio>
-  <audio id="comboSound" src="audio/combo.mp3" preload="auto"></audio>
-  <audio id="helperSound" src="audio/helper.mp3" preload="auto"></audio>
-  <audio id="upgradeSound" src="audio/upgrade.mp3" preload="auto"></audio>
-  <audio id="penaltySound" src="audio/penalty.mp3" preload="auto"></audio>
-
-  <!-- 📦 Подключение игровой логики (строго в этом порядке) -->
+  <!-- Игровая логика (обычные скрипты) -->
   <script src="js/game-logic.js"></script>
   <script src="js/shop.js"></script>
   <script src="js/achievements.js"></script>
@@ -127,71 +63,45 @@
   <script src="js/telegram-integration.js"></script>
   <script src="js/daily-bonus.js"></script>
 
-  <!-- 🌌 Инициализация 3D-фона (ES-модуль, запускается после загрузки DOM) -->
+  <!-- 3D-фон (модуль) -->
   <script type="module">
-    import { ParticlesSwarm } from './js/Sun_System.js';
     import { BackgroundManager } from './js/BackgroundManager.js';
-
+    
     window.bgManager = null;
-
+    
     function initSpaceBackground() {
       const container = document.getElementById('space-bg-container');
       if (!container) return;
-
+      
       try {
-        // Определяем устройство для оптимизации
         const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
-        
         window.bgManager = new BackgroundManager(container, {
-          particleCount: isMobile ? 10000 : 20000,
+          particleCount: isMobile ? 8000 : 15000,
           speedMult: 1.0,
-          enableBloom: true,
           cameraBaseZ: 120,
-          cameraMinZ: 25,
+          cameraMinZ: 28,
           fovStart: 70,
-          fovMin: 38,
-          speedMultBase: 1.0,
-          speedMultMax: 4.0,
-          bloomStart: 1.4,
-          bloomMax: 2.8
-        });
-
-        // Подписка на события фона для обновления UI
+          fovMin: 35
+        }).init();
+        
         window.bgManager.on('progress:updated', (data) => {
           const pt = document.getElementById('progressText');
           if (pt) pt.textContent = `Прогресс: ${data.au} а.е. (${data.percent}%)`;
         });
-
-        window.bgManager.on('planet:near', (data) => {
-          const title = document.getElementById('gameTitle');
-          if (title && !document.body.classList.contains('traveling')) {
-            title.textContent = `🪐 ${data.label}`;
-          }
-        });
-
-        // Жизненный цикл
+        
         window.addEventListener('resize', () => window.bgManager?.resize());
         document.addEventListener('visibilitychange', () => {
           document.hidden ? window.bgManager?.pause() : window.bgManager?.resume();
         });
-
-        // Убираем экран загрузки
-        const loader = document.getElementById('loading-overlay');
-        if (loader) loader.style.opacity = '0';
-        setTimeout(() => loader?.remove(), 600);
-        document.body.classList.add('bg-ready');
-        console.log('✅ Космический фон инициализирован');
+        
+        console.log('✅ 3D-фон инициализирован');
       } catch (e) {
-        console.error('❌ Ошибка инициализации фона:', e);
-        const loader = document.getElementById('loading-overlay');
-        if (loader) {
-          loader.textContent = '⚠️ 3D-фон не загрузился. Игра запущена в режиме совместимости.';
-          loader.style.color = '#ff9800';
-          setTimeout(() => loader?.remove(), 2000);
-        }
+        console.error('❌ Ошибка фона:', e);
+        // Заглушка, чтобы игра не падала
+        window.bgManager = { setProgress: ()=>{}, flyToPlanet: ()=>{}, setPlanet: ()=>{}, pause: ()=>{}, resume: ()=>{}, on: ()=>{} };
       }
     }
-
+    
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', initSpaceBackground);
     } else {
