@@ -1,6 +1,6 @@
 /**
  * ParticlesSwarm — Ядро солнечной системы на частицах
- * Исправленная версия: корректные импорты + синтаксис
+ * Исправленная версия: корректный синтаксис + импорты
  */
 import * as THREE from 'three';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
