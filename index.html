@@ -6,7 +6,7 @@
     <title>Космический Кликер</title>
     <link rel="stylesheet" href="css/styles.css">
     
-    <!-- Importmap для Three.js -->
+    <!-- ⚠️ Importmap для загрузки Three.js и модулей -->
     <script type="importmap">
     {
         "imports": {
@@ -17,18 +17,18 @@
     </script>
     
     <style>
-        /* Стили для фона */
+        /* Принудительные стили для правильного наложения слоев */
         #space-bg-container {
             position: fixed;
             top: 0; left: 0;
             width: 100%; height: 100%;
-            z-index: 0;
-            pointer-events: none;
+            z-index: 0; /* Фон самый нижний слой */
+            pointer-events: none; /* Клики проходят сквозь фон */
         }
         
         #game-ui {
             position: relative;
-            z-index: 10;
+            z-index: 10; /* Интерфейс выше фона */
             width: 100vw;
             height: 100vh;
             overflow: hidden;
@@ -37,7 +37,7 @@
 </head>
 <body>
 
-    <!-- 🌌 Контейнер для 3D-фона -->
+    <!-- 🌌 Контейнер для 3D-фона (Солнечная система) -->
     <div id="space-bg-container"></div>
 
     <!-- 🎮 Игровой интерфейс -->
@@ -57,8 +57,6 @@
     </div>
     <div id="progressText">Прогресс: 0.00000 / 0.38710 а.е. (0%)</div>
 
-    <button id="saveBtn" title="Сохранить игру">💾</button>
-
     <!-- 🔽 Кнопки улучшений (справа) -->
     <button id="upgradeClickBtn" class="upgrade-btn btn-unavailable">
         👊 <span class="upgrade-cost">80</span>
@@ -76,9 +74,6 @@
         ⚔️ <span class="upgrade-cost">1000</span>
     </button>
 
-    <!-- 🕹️ Игровая зона -->
-    <div id="gameArea"></div>
-
     <!-- 🛒 Магазин и Достижения -->
     <div id="shop-container" class="shop-container">
         <button id="shopBtn" class="shop-btn">🛒</button>
@@ -88,12 +83,22 @@
         <button id="achievementsBtn" class="achievements-btn">🏆</button>
     </div>
 
+    <!-- 💾 Кнопка сохранения -->
+    <button id="saveBtn" title="Сохранить игру">💾</button>
+
+    <!-- 🕹️ Игровая зона (где появляются блоки) -->
+    <div id="gameArea"></div>
+
     <!-- 📢 Уведомления -->
     <div id="levelAnnounce"></div>
     <div id="penaltyAnnounce" style="display:none;"></div>
     <div id="tooltip" class="tooltip"></div>
 
-    <!-- 🚀 Экран приветствия -->
+    <!-- 🔔 Активные бусты -->
+    <div id="activeBoosts"></div>
+    <div id="saveIndicator"></div>
+
+    <!-- 🚀 Экран приветствия (меню) -->
     <div id="welcomeScreen">
         <h2>🚀 КОСМИЧЕСКИЙ КЛИКЕР</h2>
         <p>Разрушайте восходящие блоки и собирайте космические Кристаллы!</p>
@@ -117,7 +122,7 @@
     <audio id="upgradeSound" src="audio/upgrade.mp3" preload="auto"></audio>
     <audio id="penaltySound" src="audio/penalty.mp3" preload="auto"></audio>
 
-    <!-- 📦 Подключение скриптов игры -->
+    <!-- 📦 Подключение скриптов игры (в правильном порядке) -->
     <script src="js/save-system.js"></script>
     <script src="js/translations.js"></script>
     <script src="js/telegram-integration.js"></script>
@@ -137,26 +142,37 @@
             if (!container) return;
 
             try {
+                // Определяем мощность устройства
                 const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
                 const particleCount = isMobile ? 8000 : 15000;
 
+                // Создаем сцену
                 const swarm = new ParticlesSwarm(container, particleCount);
 
+                // Создаем глобальный объект для управления фоном из game-logic.js
                 window.bgManager = {
                     swarm: swarm,
+                    
+                    // Ускорение орбит при прогрессе
                     setProgress: (percent) => {
                         if (swarm) swarm.speedMult = 0.5 + (percent / 100) * 3;
                     },
-                    flyToPlanet: (planetName) => {
+                    
+                    // Эффект пролета при смене планеты
+                    flyToPlanet: (planetName, duration = 2000) => {
                         console.log('🚀 Перелёт к:', planetName);
                         if (swarm) {
-                            swarm.speedMult = 5.0;
-                            setTimeout(() => { if (swarm) swarm.speedMult = 1.0; }, 2000);
+                            swarm.speedMult = 5.0; // Ускорение "варп"
+                            setTimeout(() => { 
+                                if (swarm) swarm.speedMult = 1.0; 
+                            }, duration);
                         }
                     },
+                    
                     setPlanet: () => {},
                     pause: () => { if (swarm) swarm.speedMult = 0; },
                     resume: () => { if (swarm) swarm.speedMult = 1.0; },
+                    
                     resize: () => {
                         if (swarm) {
                             swarm.camera.aspect = window.innerWidth / window.innerHeight;
@@ -167,21 +183,28 @@
                     }
                 };
 
+                // Обработчики событий
                 window.addEventListener('resize', () => window.bgManager?.resize());
                 document.addEventListener('visibilitychange', () => {
                     document.hidden ? window.bgManager?.pause() : window.bgManager?.resume();
                 });
 
-                console.log('✅ 3D-фон инициализирован');
+                console.log('✅ 3D-фон инициализирован:', particleCount, 'частиц');
             } catch (e) {
                 console.error('❌ Ошибка фона:', e);
+                // Заглушка, чтобы игра не падала
                 window.bgManager = {
-                    setProgress: () => {}, flyToPlanet: () => {}, setPlanet: () => {},
-                    pause: () => {}, resume: () => {}, resize: () => {}
+                    setProgress: () => {}, 
+                    flyToPlanet: () => {}, 
+                    setPlanet: () => {},
+                    pause: () => {}, 
+                    resume: () => {}, 
+                    resize: () => {}
                 };
             }
         }
 
+        // Запуск после загрузки страницы
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', initBackground);
         } else {
