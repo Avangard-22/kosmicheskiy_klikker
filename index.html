@@ -6,7 +6,7 @@
     <title>Космический Кликер</title>
     <link rel="stylesheet" href="css/styles.css">
     
-    <!-- Importmap для Three.js -->
+    <!-- Importmap для загрузки Three.js -->
     <script type="importmap">
     {
         "imports": {
@@ -17,83 +17,80 @@
     </script>
     
     <style>
-        /* === КРИТИЧЕСКИ ВАЖНЫЕ СТИЛИ ЛЕГКОГО НАЛОЖЕНИЯ === */
-        
-        /* 1. Фон (самый нижний слой) */
+        /* Принудительные стили для правильного наложения слоев */
         #space-bg-container {
             position: fixed !important;
-            top: 0 !important;
-            left: 0 !important;
-            width: 100% !important;
-            height: 100% !important;
-            z-index: 0 !important; /* Самая низкая зона */
-            pointer-events: none !important; /* Не перехватывает клики */
-        }
-        
-        /* 2. Игровая зона (где блоки) */
-        #gameArea {
-            position: absolute !important;
-            top: 0 !important;
-            left: 0 !important;
-            width: 100% !important;
-            height: 100% !important;
-            overflow: hidden !important;
-            z-index: 5 !important;
-        }
-        
-        /* 3. Уведомления и анимации */
-        .damage-text, .combo-text, .reward-text, .explosion {
+            top: 0 !important; left: 0 !important;
+            width: 100% !important; height: 100% !important;
+            z-index: 0 !important;
             pointer-events: none !important;
         }
         
-        /* 4. Магазин и Достижения (верхний слой) */
-        .shop-container, .achievements-container {
-            z-index: 30 !important;
-        }
-        
-        /* 5. Сохранение (самый верх) */
-        #saveBtn {
-            z-index: 30 !important;
+        #game-ui {
+            position: relative !important;
+            z-index: 10 !important;
+            width: 100vw; height: 100vh;
+            overflow: hidden;
         }
     </style>
 </head>
 <body>
 
-    <!-- 🌌 Контейнер для 3D-фона (НЕ ПЕРЕХВАТЫВАЕТ КЛИКИ) -->
+    <!-- 🌌 Контейнер для 3D-фона -->
     <div id="space-bg-container"></div>
 
-    <!-- 🕹️ Игровая зона (где блоки) -->
-    <div id="gameArea"></div>
+    <!-- 🎮 Игровой интерфейс -->
+    <header id="header">
+        <h1 id="gameTitle">☿ Меркурий</h1>
+    </header>
 
-    <!-- 🔽 Кнопки улучшений (правая сторона экрана) -->
-    <button id="upgradeClickBtn" class="upgrade-btn btn-unavailable" title="Увеличить силу удара">
+    <div id="hud-left">
+        <div class="hud-item"><i>💎</i> Кристаллы: <span id="coins-value">0</span></div>
+        <div class="hud-item"><i>👊</i> Сила: <span id="clickPower-value">1</span></div>
+        <div class="hud-item"><i>⚡</i> Крит: <span id="critChance-value">0.1%</span></div>
+        <div class="hud-item"><i>🔥</i> Множ.крита: <span id="critMultiplier-value">x2.0</span></div>
+    </div>
+
+    <div id="progressContainer">
+        <div id="progressBar"></div>
+    </div>
+    <div id="progressText">Прогресс: 0.00000 / 0.38710 а.е. (0%)</div>
+
+    <button id="saveBtn" title="Сохранить игру">💾</button>
+
+    <!-- 🔽 Кнопки улучшений -->
+    <button id="upgradeClickBtn" class="upgrade-btn btn-unavailable">
         👊 <span class="upgrade-cost">80</span>
     </button>
-    <button id="upgradeHelperBtn" class="upgrade-btn btn-unavailable" title="Активировать Bobo">
+    <button id="upgradeHelperBtn" class="upgrade-btn btn-unavailable">
         🤖 <span class="upgrade-cost">1500</span>
     </button>
-    <button id="upgradeCritChanceBtn" class="upgrade-btn btn-unavailable" title="Увеличить шанс крита">
+    <button id="upgradeCritChanceBtn" class="upgrade-btn btn-unavailable">
         🎯 <span class="upgrade-cost">500</span>
     </button>
-    <button id="upgradeCritMultBtn" class="upgrade-btn btn-unavailable" title="Увеличить множитель крита">
+    <button id="upgradeCritMultBtn" class="upgrade-btn btn-unavailable">
         💥 <span class="upgrade-cost">800</span>
     </button>
-    <button id="upgradeHelperDmgBtn" class="upgrade-btn btn-unavailable" title="Увеличить урон помощника">
+    <button id="upgradeHelperDmgBtn" class="upgrade-btn btn-unavailable">
         ⚔️ <span class="upgrade-cost">1000</span>
     </button>
+
+    <!-- 🛒 Магазин и Достижения -->
+    <div id="shop-container" class="shop-container">
+        <button id="shopBtn" class="shop-btn">🛒</button>
+    </div>
+    
+    <div id="achievements-container" class="achievements-container">
+        <button id="achievementsBtn" class="achievements-btn">🏆</button>
+    </div>
+
+    <!-- 🕹️ Игровая зона -->
+    <div id="gameArea"></div>
 
     <!-- 📢 Уведомления -->
     <div id="levelAnnounce"></div>
     <div id="penaltyAnnounce" style="display:none;"></div>
     <div id="tooltip" class="tooltip"></div>
-
-    <!-- 🔊 Звуки -->
-    <audio id="clickSound" src="audio/click.mp3" preload="auto"></audio>
-    <audio id="breakSound" src="audio/break.mp3" preload="auto"></audio>
-    <audio id="comboSound" src="audio/combo.mp3" preload="auto"></audio>
-    <audio id="helperSound" src="audio/helper.mp3" preload="auto"></audio>
-    <audio id="upgradeSound" src="audio/upgrade.mp3" preload="auto"></audio>
-    <audio id="penaltySound" src="audio/penalty.mp3" preload="auto"></audio>
 
     <!-- 🚀 Экран приветствия -->
     <div id="welcomeScreen">
@@ -111,38 +108,15 @@
         <button id="langBtn-welcome">🇷🇺</button>
     </div>
 
-    <!-- 🛒 Магазин и Достижения -->
-    <div id="shop-container" class="shop-container">
-        <button id="shopBtn" class="shop-btn">🛒</button>
-    </div>
-    
-    <div id="achievements-container" class="achievements-container">
-        <button id="achievementsBtn" class="achievements-btn">🏆</button>
-    </div>
+    <!-- 🔊 Звуки -->
+    <audio id="clickSound" src="audio/click.mp3" preload="auto"></audio>
+    <audio id="breakSound" src="audio/break.mp3" preload="auto"></audio>
+    <audio id="comboSound" src="audio/combo.mp3" preload="auto"></audio>
+    <audio id="helperSound" src="audio/helper.mp3" preload="auto"></audio>
+    <audio id="upgradeSound" src="audio/upgrade.mp3" preload="auto"></audio>
+    <audio id="penaltySound" src="audio/penalty.mp3" preload="auto"></audio>
 
-    <!-- 💾 Кнопка сохранения -->
-    <button id="saveBtn" title="Сохранить игру">💾</button>
-
-    <!-- Заголовок игры -->
-    <header id="header">
-        <h1 id="gameTitle">☿ Меркурий</h1>
-    </header>
-
-    <!-- HUD (слева сверху) -->
-    <div id="hud-left">
-        <div class="hud-item"><i>💎</i> Кристаллы: <span id="coins-value">0</span></div>
-        <div class="hud-item"><i>👊</i> Сила: <span id="clickPower-value">1</span></div>
-        <div class="hud-item"><i>⚡</i> Крит: <span id="critChance-value">0.1%</span></div>
-        <div class="hud-item"><i>🔥</i> Множ.крита: <span id="critMultiplier-value">x2.0</span></div>
-    </div>
-
-    <!-- Прогресс-бар (центр сверху) -->
-    <div id="progressContainer">
-        <div id="progressBar"></div>
-    </div>
-    <div id="progressText">Прогресс: 0.00000 / 0.38710 а.е. (0%)</div>
-
-    <!-- 📦 Подключение скриптов (строго в этом порядке) -->
+    <!-- 📦 Подключение скриптов игры -->
     <script src="js/save-system.js"></script>
     <script src="js/translations.js"></script>
     <script src="js/telegram-integration.js"></script>
@@ -156,23 +130,23 @@
         import { ParticlesSwarm } from './js/Sun_System.js';
         
         window.bgManager = null;
-
+        
         function initBackground() {
             const container = document.getElementById('space-bg-container');
             if (!container) return;
-
+            
             try {
                 const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
                 const particleCount = isMobile ? 8000 : 15000;
-
+                
                 const swarm = new ParticlesSwarm(container, particleCount);
-
+                
                 window.bgManager = {
                     swarm: swarm,
                     setProgress: (percent) => {
                         if (swarm) swarm.speedMult = 0.5 + (percent / 100) * 3;
                     },
-                    flyToPlanet: (planetName) => {},
+                    flyToPlanet: () => {},
                     setPlanet: () => {},
                     pause: () => { if (swarm) swarm.speedMult = 0; },
                     resume: () => { if (swarm) swarm.speedMult = 1.0; },
@@ -185,12 +159,12 @@
                         }
                     }
                 };
-
+                
                 window.addEventListener('resize', () => window.bgManager?.resize());
                 document.addEventListener('visibilitychange', () => {
                     document.hidden ? window.bgManager?.pause() : window.bgManager?.resume();
                 });
-
+                
                 console.log('✅ 3D-фон инициализирован');
             } catch (e) {
                 console.error('❌ Ошибка фона:', e);
@@ -204,13 +178,13 @@
                 };
             }
         }
-
-        // Ждём полной загрузки страницы
+        
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', initBackground);
         } else {
             setTimeout(initBackground, 500);
         }
     </script>
+
 </body>
 </html>
