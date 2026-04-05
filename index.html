@@ -6,7 +6,7 @@
     <title>Космический Кликер</title>
     <link rel="stylesheet" href="css/styles.css">
     
-    <!-- Importmap для загрузки Three.js -->
+    <!-- Importmap для Three.js -->
     <script type="importmap">
     {
         "imports": {
@@ -92,22 +92,6 @@
     <div id="penaltyAnnounce" style="display:none;"></div>
     <div id="tooltip" class="tooltip"></div>
 
-    <!-- 🚀 Экран приветствия -->
-    <div id="welcomeScreen">
-        <h2>🚀 КОСМИЧЕСКИЙ КЛИКЕР</h2>
-        <p>Разрушайте восходящие блоки и собирайте космические Кристаллы!</p>
-        <p>Каждый блок требует определённого количества ударов для разрушения.</p>
-        <p>Реалистичная система прогресса:</p>
-        <p>🌌 Астрономические единицы — перемещайтесь по Солнечной системе</p>
-        <p>🪐 9 реальных планет — от Меркурия до Плутона</p>
-        <p>🚀 Улучшения — увеличивайте силу, криты и активируйте помощника</p>
-        <p>✨ Редкие блоки — дают бонусы и огромные награды!</p>
-        <p>⚠️ Если блок уйдёт за экран — вы потеряете часть улучшения!</p>
-        <button id="continueBtn" class="btn">Продолжить</button>
-        <button id="startBtn" class="btn">Новая игра</button>
-        <button id="langBtn-welcome">🇷🇺</button>
-    </div>
-
     <!-- 🔊 Звуки -->
     <audio id="clickSound" src="audio/click.mp3" preload="auto"></audio>
     <audio id="breakSound" src="audio/break.mp3" preload="auto"></audio>
@@ -128,63 +112,39 @@
     <!-- 🌌 Инициализация 3D-фона -->
     <script type="module">
         import { ParticlesSwarm } from './js/Sun_System.js';
-        
         window.bgManager = null;
-        
         function initBackground() {
             const container = document.getElementById('space-bg-container');
             if (!container) return;
-            
             try {
                 const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
-                const particleCount = isMobile ? 8000 : 15000;
-                
-                const swarm = new ParticlesSwarm(container, particleCount);
-                
-                window.bgManager = {
-                    swarm: swarm,
-                    setProgress: (percent) => {
-                        if (swarm) swarm.speedMult = 0.5 + (percent / 100) * 3;
-                    },
-                    flyToPlanet: () => {},
-                    setPlanet: () => {},
-                    pause: () => { if (swarm) swarm.speedMult = 0; },
-                    resume: () => { if (swarm) swarm.speedMult = 1.0; },
-                    resize: () => {
-                        if (swarm) {
-                            swarm.camera.aspect = window.innerWidth / window.innerHeight;
-                            swarm.camera.updateProjectionMatrix();
-                            swarm.renderer.setSize(window.innerWidth, window.innerHeight);
-                            swarm.composer.setSize(window.innerWidth, window.innerHeight);
-                        }
-                    }
-                };
-                
+                const swarm = new ParticlesSwarm(container, isMobile ? 8000 : 15000);
+                window.bgManager = { swarm, setProgress: (p)=>swarm.speedMult=0.5+(p/100)*3, flyToPlanet:()=>{}, setPlanet:()=>{}, pause: ()=>{if(swarm)swarm.speedMult=0}, resume: ()=>{if(swarm)swarm.speedMult=1.0}, resize: ()=>{} };
                 window.addEventListener('resize', () => window.bgManager?.resize());
-                document.addEventListener('visibilitychange', () => {
-                    document.hidden ? window.bgManager?.pause() : window.bgManager?.resume();
-                });
-                
-                console.log('✅ 3D-фон инициализирован');
-            } catch (e) {
-                console.error('❌ Ошибка фона:', e);
-                window.bgManager = {
-                    setProgress: () => {}, 
-                    flyToPlanet: () => {}, 
-                    setPlanet: () => {},
-                    pause: () => {}, 
-                    resume: () => {}, 
-                    resize: () => {}
-                };
-            }
+                console.log('✅ Фон готов');
+            } catch (e) { console.error(e); }
         }
-        
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', initBackground);
-        } else {
-            setTimeout(initBackground, 500);
-        }
+        document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', initBackground) : initBackground();
     </script>
-
+    
+    <!-- Проверка доступности кнопок -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const ids = ['upgradeClickBtn', 'upgradeHelperBtn', 'upgradeCritChanceBtn', 'upgradeCritMultBtn', 'upgradeHelperDmgBtn'];
+            let missing = 0;
+            ids.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    console.log('✅ Кнопка найдена:', id);
+                    el.onclick = () => { console.log('🔘 Клик по:', id); };
+                } else {
+                    console.warn('❌ Кнопка НЕ найдена:', id);
+                    missing++;
+                }
+            });
+            if (missing > 0) alert(`❗Не найдено ${missing} кнопок! Проверьте ID в HTML.`);
+        });
+    </script>
 </body>
+</html>
 </html>
