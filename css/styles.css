@@ -1,3 +1,31 @@
+/* 🌌 3D ФОН — ОБЯЗАТЕЛЬНО */
+#space-bg-container {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  z-index: 0 !important;
+  pointer-events: none !important;
+  background: #000 !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+#space-bg-container canvas {
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+}
+
+/* UI поверх фона */
+#header, #hud-left, .upgrade-btn, #gameArea {
+  position: relative;
+  z-index: 10 !important;
+}
 /* ✅ Универсальный селектор - должен быть первым */
 *, *::before, *::after {
   box-sizing: border-box;
