@@ -23,6 +23,12 @@
   z-index: 0 !important;
 }
 
+/* Кнопки магазина и достижений */
+.shop-container, .achievements-container {
+  display: block !important;
+  visibility: visible !important;
+}
+
 #planetBackgroundCanvas, #particlesCanvas {
   display: none !important;
 }
