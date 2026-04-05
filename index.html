@@ -63,36 +63,21 @@
   <script src="js/telegram-integration.js"></script>
   <script src="js/daily-bonus.js"></script>
 
-  <!-- 3D-фон (модуль) -->
   <script type="module">
-    import { BackgroundManager } from './js/BackgroundManager.js';
+    import { ParticlesSwarm } from './js/Sun_System.js';
     
-    window.bgManager = null;
-    
-    function initSpaceBackground() {
-      const container = document.getElementById('space-bg-container');
-      if (!container) return;
-      
-      try {
-        const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
-        window.bgManager = new BackgroundManager(container, {
-          particleCount: isMobile ? 8000 : 15000,
-          speedMult: 1.0,
-          cameraBaseZ: 120,
-          cameraMinZ: 28,
-          fovStart: 70,
-          fovMin: 35
-        }).init();
-        
-        window.bgManager.on('progress:updated', (data) => {
-          const pt = document.getElementById('progressText');
-          if (pt) pt.textContent = `Прогресс: ${data.au} а.е. (${data.percent}%)`;
-        });
-        
-        window.addEventListener('resize', () => window.bgManager?.resize());
-        document.addEventListener('visibilitychange', () => {
-          document.hidden ? window.bgManager?.pause() : window.bgManager?.resume();
-        });
+    const container = document.getElementById('space-bg-container');
+    if (container) {
+      const swarm = new ParticlesSwarm(container, 15000);
+      window.bgManager = {
+        swarm: swarm,
+        setProgress: (p) => { if (swarm) swarm.speedMult = 0.5 + (p / 100) * 3; },
+        flyToPlanet: () => {},
+        setPlanet: () => {},
+        pause: () => { if (swarm) swarm.speedMult = 0; },
+        resume: () => { if (swarm) swarm.speedMult = 1; },
+        resize: () => {}
+      };
         
         console.log('✅ 3D-фон инициализирован');
       } catch (e) {
