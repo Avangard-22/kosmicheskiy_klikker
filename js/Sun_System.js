@@ -14,9 +14,8 @@ export class ParticlesSwarm {
     this.camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 2000);
     this.camera.position.set(0, 0, 100);
     
-    this.renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
+    this.renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
     this.renderer.setSize(window.innerWidth, window.innerHeight);
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     this.container.appendChild(this.renderer.domElement);
 
     this.composer = new EffectComposer(this.renderer);
@@ -41,43 +40,46 @@ export class ParticlesSwarm {
     
     this.positions = [];
     for (let i = 0; i < this.count; i++) {
-      this.positions.push(new THREE.Vector3((Math.random()-0.5)*100, (Math.random()-0.5)*100, (Math.random()-0.5)*100));
+      this.positions.push(new THREE.Vector3((Math.random() - 0.5) * 100, (Math.random() - 0.5) * 100, (Math.random() - 0.5) * 100));
       this.mesh.setColorAt(i, this.color.setHex(0x00ff88));
     }
     
     this.clock = new THREE.Clock();
     this.animate = this.animate.bind(this);
     this.animate();
-    
-    this._onResize = this._onResize.bind(this);
-    window.addEventListener('resize', this._onResize);
-  }
-
-  _onResize() {
-    this.camera.aspect = window.innerWidth / window.innerHeight;
-    this.camera.updateProjectionMatrix();
-    this.renderer.setSize(window.innerWidth, window.innerHeight);
-    this.composer.setSize(window.innerWidth, window.innerHeight);
   }
 
   animate() {
     requestAnimationFrame(this.animate);
     const time = this.clock.getElapsedTime() * this.speedMult;
-    const count = this.count;
     const PARAMS = { speed: 0.09, tilt: 0.35, pScale: 2.038, orbitBright: 0.35, tailLen: 3 };
-    
-    for (let i = 0; i < count; i++) {
-      const target = this.target;
-      const color = this.pColor;
-      
-      const t = time * PARAMS.speed;
-      const n = i / count;
-      const ct = Math.cos(PARAMS.tilt);
-      const st = Math.sin(PARAMS.tilt);
-      
-      const sLim = 0.01, pLim = 0.14, rLim = 0.21, oLim = 0.45, aLim = 0.70, cLim = 0.85;
-      let x = 0, y = 0, z = 0, r = 0, g = 0, b = 0;
+    const count = this.count;
 
+    for (let i = 0; i < count; i++) {
+      let target = this.target;
+      let color = this.pColor;
+      
+      const speedMul = PARAMS.speed;
+      const tilt = PARAMS.tilt;
+      const planetScale = PARAMS.pScale;
+      const orbitBright = PARAMS.orbitBright;
+      const tailLen = PARAMS.tailLen;
+      
+      const t = time * speedMul;
+      const n = i / count;
+      const ct = Math.cos(tilt);
+      const st = Math.sin(tilt);
+      
+      const sLim = 0.01;
+      const pLim = 0.14;
+      const rLim = 0.21;
+      const oLim = 0.45;
+      const aLim = 0.70;
+      const cLim = 0.85;
+      
+      let x = 0, y = 0, z = 0, r = 0, g = 0, b = 0;
+      
+      // ☀️ СОЛНЦЕ
       if (n < sLim) {
         const sn = n / sLim;
         const phi = Math.acos(Math.max(-1.0, Math.min(1.0, 1.0 - 2.0 * sn)));
@@ -89,6 +91,7 @@ export class ParticlesSwarm {
         const pulse = 0.85 + 0.15 * Math.sin(t * 4.0 + i * 0.05);
         r = 1.0; g = 0.92 * pulse; b = 0.6 * pulse;
       }
+      // 🪐 ПЛАНЕТЫ
       else if (n < pLim) {
         const pNorm = Math.max(0.0, (n - sLim) / (pLim - sLim));
         const pIdx = Math.min(8, Math.floor(pNorm * 9.0));
@@ -112,7 +115,7 @@ export class ParticlesSwarm {
         const angle = t * omega + off;
         const px = vR * Math.cos(angle);
         const pz = vR * Math.sin(angle);
-        const pSz = sz * PARAMS.pScale;
+        const pSz = sz * planetScale;
         
         x = px + pSz * Math.sin(phi) * Math.cos(theta);
         y = pSz * Math.cos(phi);
@@ -122,6 +125,7 @@ export class ParticlesSwarm {
         const light = Math.max(0.25, 0.75 / (0.5 + dist * 0.04));
         r = cr * light; g = cg * light; b = cb * light;
       }
+      // 💍 КОЛЬЦА
       else if (n < rLim) {
         const rNorm = Math.max(0.0, (n - pLim) / (rLim - pLim));
         const isSaturn = rNorm < 0.5 ? 1.0 : 0.0;
@@ -141,7 +145,7 @@ export class ParticlesSwarm {
         const hash = Math.sin(i * 12.9898 + 78.233) * 43758.5453;
         const h = hash - Math.floor(hash);
         const theta = rLocal * 12.56637 + h * 2.5;
-        const planetR = pSzBase * PARAMS.pScale;
+        const planetR = pSzBase * planetScale;
         const ringRad = planetR + 0.45 + h * 0.35;
         
         if (isSaturn > 0.5) {
@@ -156,6 +160,7 @@ export class ParticlesSwarm {
           r = 0.42; g = 0.62; b = 0.72;
         }
       }
+      // ⭕ ОРБИТЫ
       else if (n < oLim) {
         const oNorm = Math.max(0.0, (n - rLim) / (oLim - rLim));
         const oIdx = Math.min(8, Math.floor(oNorm * 9.0));
@@ -179,9 +184,10 @@ export class ParticlesSwarm {
         y = thick * 0.25;
         z = vR * Math.sin(theta);
         
-        const bright = PARAMS.orbitBright * (0.35 + oIdx * 0.04);
+        const bright = orbitBright * (0.35 + oIdx * 0.04);
         r = bright * 0.5; g = bright * 0.6; b = bright * 0.9;
       }
+      // ☄️ АСТЕРОИДЫ
       else if (n < aLim) {
         const aNorm = Math.max(0.0, (n - oLim) / (aLim - oLim));
         const aAU = 2.2 + aNorm * 1.1;
@@ -204,6 +210,7 @@ export class ParticlesSwarm {
         g = baseC * 0.88;
         b = baseC * 0.72;
       }
+      // ☄️ КОМЕТЫ
       else if (n < cLim) {
         const cNorm = Math.max(0.0, (n - aLim) / (cLim - aLim));
         const cIdx = Math.min(2, Math.floor(cNorm * 3.0));
@@ -234,7 +241,7 @@ export class ParticlesSwarm {
         x = x1; y = y1 * cI; z = y1 * sI;
         
         const head = Math.exp(-trailOffset * 80.0);
-        const tail = Math.exp(-trailOffset * 4.0 * PARAMS.tailLen) * (1.0 - head);
+        const tail = Math.exp(-trailOffset * 4.0 * tailLen) * (1.0 - head);
         const trailDim = Math.max(0.0, 1.0 - head - tail) * 0.12;
         const boost = head * 2.5;
         
@@ -242,6 +249,7 @@ export class ParticlesSwarm {
         g = Math.min(1.0, 0.65 * tail + 0.35 * trailDim + boost * 0.85);
         b = Math.min(1.0, 0.85 * tail + 0.45 * trailDim + boost * 0.6);
       }
+      // ✨ ЗВЁЗДЫ
       else {
         const sn = (n - cLim) / (1.0 - cLim);
         const phi = Math.acos(Math.max(-1.0, Math.min(1.0, 1.0 - 2.0 * sn)));
@@ -255,30 +263,22 @@ export class ParticlesSwarm {
         const twinkle = 0.6 + 0.4 * Math.sin(t * 1.2 + i * 0.3);
         r = twinkle * 0.8; g = twinkle * 0.85; b = twinkle;
       }
-
+      
       const yT = y * ct - z * st;
       const zT = y * st + z * ct;
       
       target.set(x, yT, zT);
       color.set(Math.min(1.0, Math.max(0.0, r)), Math.min(1.0, Math.max(0.0, g)), Math.min(1.0, Math.max(0.0, b)));
-
+      
       this.positions[i].lerp(target, 0.1);
       this.dummy.position.copy(this.positions[i]);
       this.dummy.updateMatrix();
       this.mesh.setMatrixAt(i, this.dummy.matrix);
-      this.mesh.setColorAt(i, color);
+      this.mesh.setColorAt(i, this.pColor);
     }
     
     this.mesh.instanceMatrix.needsUpdate = true;
     this.mesh.instanceColor.needsUpdate = true;
     this.composer.render();
-  }
-
-  dispose() {
-    window.removeEventListener('resize', this._onResize);
-    this.geometry.dispose();
-    this.material.dispose();
-    this.scene.remove(this.mesh);
-    this.renderer.dispose();
   }
 }
