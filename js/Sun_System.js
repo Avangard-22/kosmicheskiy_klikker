@@ -1,6 +1,6 @@
 /**
  * ParticlesSwarm — Ядро солнечной системы на частицах
- * Исправленная версия для GitHub Pages
+ * Исправленная версия: корректные пути импорта Three.js
  */
 import * as THREE from 'three';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
