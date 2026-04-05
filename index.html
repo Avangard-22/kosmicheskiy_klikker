@@ -1,324 +1,202 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
-  <!-- Базовый путь для GitHub Pages -->
-  <base href="https://avangard-22.github.io/kosmicheskiy_klikker/">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Космический Кликер</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/styles.css">
   
-  <!-- Telegram Web App Integration -->
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  
-  <style>
-    /* Стиль для отображения в Telegram Web App */
-    body {
-      background: #000;
+  <!-- ✅ Importmap для Three.js (обязательно для ES-модулей) -->
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+      "three/examples/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
     }
-    
-    @media (max-width: 768px) {
-      body {
-        -webkit-touch-callout: none;
-        -webkit-user-select: none;
-        user-select: none;
-      }
+  }
+  </script>
+
+  <style>
+    /* ✅ Минимальные стили для корректного старта до загрузки CSS */
+    body, html { margin: 0; padding: 0; overflow: hidden; height: 100%; background: #000; }
+    #space-bg-container {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      z-index: 0; pointer-events: none; background: #000;
+    }
+    #game-wrapper {
+      position: relative; z-index: 10; width: 100vw; height: 100vh;
+      display: flex; flex-direction: column;
+    }
+    .hidden { display: none !important; }
+    #loading-overlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: #05050a; color: #4CAF50; font-family: 'Orbitron', sans-serif;
+      z-index: 9999; display: flex; align-items: center; justify-content: center;
+      font-size: 1.2em; transition: opacity 0.5s ease;
     }
   </style>
 </head>
 <body>
-  <!-- Canvas для планетарного фона -->
-  <canvas id="planetBackgroundCanvas"></canvas>
-  <!-- UI -->
-  <div id="header">
-    <h2 id="gameTitle">☿ Меркурий</h2>
-  </div>
-  <!-- Кнопка сохранения -->
-  <button id="saveBtn" title="Сохранить игру">
-    <i class="fas fa-save"></i>
-  </button>
-  <!-- HUD -->
-  <div id="hud-left">
-    <div class="hud-item" id="coins"><i class="fas fa-gem"></i> Кристаллы: <span id="coins-value">0</span></div>
-    <div class="hud-item" id="clickPowerInfo"><i class="fas fa-fist-raised"></i> Сила: <span id="clickPower-value">1</span></div>
-    <div class="hud-item" id="critChanceInfo"><i class="fas fa-star"></i> Крит: <span id="critChance-value">0.1%</span></div>
-    <div class="hud-item" id="critMultiplierInfo"><i class="fas fa-star"></i> Множ: <span id="critMultiplier-value">x2.0</span></div>
-  </div>
-  <!-- ПРОГРЕСС-БАР -->
-  <div id="progressContainer">
-    <div id="progressBar"></div>
-  </div>
-  <div id="progressText">Прогресс: 0.00000 / 0.38710 а.е. (0%)</div>
-  <div id="gameArea"></div>
-  <div id="levelAnnounce"></div>
-  <!-- КНОПКИ УЛУЧШЕНИЙ -->
-  <button id="upgradeClickBtn" class="upgrade-btn btn-unavailable">
-    <i class="fas fa-fist-raised"></i>
-    <div class="upgrade-cost">80</div>
-  </button>
-  <button id="upgradeHelperBtn" class="upgrade-btn btn-unavailable">
-    <i class="fas fa-robot"></i>
-    <div class="upgrade-cost">1500</div>
-  </button>
-  <button id="upgradeCritChanceBtn" class="upgrade-btn btn-unavailable">
-    <i class="fas fa-star"></i>
-    <div class="upgrade-cost">500</div>
-  </button>
-  <button id="upgradeCritMultBtn" class="upgrade-btn btn-unavailable">
-    <i class="fas fa-star"></i>
-    <div class="upgrade-cost">800</div>
-  </button>
-  <button id="upgradeHelperDmgBtn" class="upgrade-btn btn-unavailable">
-    <i class="fas fa-bolt"></i>
-    <div class="upgrade-cost">1000</div>
-  </button>
-  <!-- КНОПКИ МАГАЗИНА -->
-  <div id="shopContainer" class="shop-container">
-    <button id="shopBtn" class="shop-btn" title="Магазин">
-      <i class="fas fa-shopping-cart"></i>
-    </button>
-    <div id="shopPanel" class="shop-panel">
-      <h3>🛒 Магазин</h3>
-      <div class="shop-item" id="shopTimeWarp">
-        <i class="fas fa-hourglass-half"></i>
-        <span>Искажение времени (30сек)</span>
-        <div class="shop-cost">250</div>
-      </div>
-      <div class="shop-item" id="shopCrystalBoost">
-        <i class="fas fa-gem"></i>
-        <span>Усилитель кристаллов (1мин)</span>
-        <div class="shop-cost">400</div>
-      </div>
-      <div class="shop-item" id="shopPowerSurge">
-        <i class="fas fa-bolt"></i>
-        <span>Скачок силы (45сек)</span>
-        <div class="shop-cost">300</div>
-      </div>
+
+  <!-- 🌌 Экран загрузки -->
+  <div id="loading-overlay">🌌 Инициализация Солнечной системы...</div>
+
+  <!-- 🌌 Контейнер для 3D-фона (НЕ перехватывает клики) -->
+  <div id="space-bg-container"></div>
+
+  <!-- 🎮 Игровой интерфейс -->
+  <div id="game-wrapper">
+    <header id="header">
+      <h1 id="gameTitle">☿ Меркурий</h1>
+    </header>
+
+    <div id="hud-left">
+      <div class="hud-item"><i>💎</i> Кристаллы: <span id="coins-value">0</span></div>
+      <div class="hud-item"><i>👊</i> Сила: <span id="clickPower-value">1</span></div>
+      <div class="hud-item"><i>⚡</i> Крит: <span id="critChance-value">0.1%</span></div>
+      <div class="hud-item"><i>🔥</i> Множ.крита: <span id="critMultiplier-value">x2.0</span></div>
     </div>
-  </div>
-  <!-- ПАНЕЛЬ ДОСТИЖЕНИЙ (динамически заполняется) -->
-  <div id="achievementsContainer" class="achievements-container">
-    <button id="achievementsBtn" class="achievements-btn" title="Достижения">
-      <i class="fas fa-trophy"></i>
-    </button>
-    <div id="achievementsPanel" class="achievements-panel">
-      <!-- Динамически заполняется JavaScript -->
+
+    <div id="progressContainer">
+      <div id="progressBar"></div>
     </div>
-  </div>
-  
-  <div id="tooltip" class="tooltip"></div>
-  <canvas id="particlesCanvas"></canvas>
-  
-  <!-- Звуковые элементы (используем base64 для GitHub Pages) -->
-  <audio id="clickSound" preload="auto" src="audio/click.wav"></audio>
-  <audio id="breakSound" preload="auto" src="audio/break.wav"></audio>
-  <audio id="upgradeSound" preload="auto" src="audio/upgrade.wav"></audio>
-  <audio id="comboSound" preload="auto" src="audio/combo.wav"></audio>
-  <audio id="helperSound" preload="auto" src="audio/helper.wav"></audio>
-  
-  <!-- Экраны -->
-  <div id="welcomeScreen">
-    <h2>🚀 КОСМИЧЕСКИЙ КЛИКЕР</h2>
-    <p>Разрушайте восходящие блоки и собирайте <strong>космические Кристаллы</strong>!</p>
-    <p>Каждый блок требует определённого количества ударов для разрушения.</p>
-    <p><strong>Реалистичная система прогресса:</strong></p>
-    <p>🌌 <strong>Астрономические единицы</strong> — перемещайтесь по Солнечной системе</p>
-    <p>🪐 <strong>9 реальных планет</strong> — от Меркурия до Плутона</p>
-    <p>🚀 <strong>Улучшения</strong> — увеличивайте силу, криты и активируйте помощника</p>
-    <p>✨ <strong>Редкие блоки</strong> — дают бонусы и огромные награды!</p>
-    <button id="continueBtn" class="btn no-save">Продолжить</button>
-    <button id="startBtn" class="btn">Новая игра</button>
-    <button id="langBtn-welcome" title="Сменить язык">
-      <span id="currentLangFlag">🇷🇺</span>
+    <div id="progressText">Прогресс: 0.00000 / 0.38710 а.е. (0%)</div>
+
+    <button id="saveBtn" title="Сохранить игру">💾</button>
+
+    <!-- 🔽 Кнопки улучшений (справа) -->
+    <button id="upgradeClickBtn" class="upgrade-btn btn-unavailable" title="Увеличить силу удара">
+      👊<span class="upgrade-cost">80</span>
     </button>
-  </div>
-  
-  <div id="saveScreen">
-    <h2>СОХРАНЕНИЕ ИГРЫ</h2>
-    <p>Хотите продолжить с сохраненной игры или начать новую?</p>
-    <button id="loadSaveBtn" class="btn">Продолжить сохраненную игру</button>
-    <button id="newGameBtn" class="btn">Начать новую игру</button>
-    <button id="cancelSaveBtn" class="btn" style="background: #666;">Отмена</button>
-  </div>
-  
-  <div id="gameOverScreen">
-    <h2>ДОБЫЧА ПРЕРВАНА!</h2>
-    <div id="finalScore">Всего урона: 0</div>
-    <button id="restartBtn">Новая добыча</button>
-    <button id="shareBtn">Поделиться</button>
+    <button id="upgradeHelperBtn" class="upgrade-btn btn-unavailable" title="Активировать Bobo">
+      🤖<span class="upgrade-cost">1500</span>
+    </button>
+    <button id="upgradeCritChanceBtn" class="upgrade-btn btn-unavailable" title="Увеличить шанс крита">
+      🎯<span class="upgrade-cost">500</span>
+    </button>
+    <button id="upgradeCritMultBtn" class="upgrade-btn btn-unavailable" title="Увеличить множитель крита">
+      💥<span class="upgrade-cost">800</span>
+    </button>
+    <button id="upgradeHelperDmgBtn" class="upgrade-btn btn-unavailable" title="Увеличить урон помощника">
+      ⚔️<span class="upgrade-cost">1000</span>
+    </button>
+
+    <!-- 🕹️ Игровая зона -->
+    <div id="gameArea"></div>
+
+    <!-- 📢 Уведомления -->
+    <div id="levelAnnounce"></div>
+    <div id="penaltyAnnounce" style="display:none;"></div>
+    <div id="tooltip" class="tooltip"></div>
+
+    <!-- 🚀 Экран приветствия -->
+    <div id="welcomeScreen">
+      <h2>🚀 КОСМИЧЕСКИЙ КЛИКЕР</h2>
+      <p>Разрушайте восходящие блоки и собирайте космические Кристаллы!</p>
+      <p>Каждый блок требует определённого количества ударов для разрушения.</p>
+      <p>Реалистичная система прогресса:</p>
+      <p>🌌 Астрономические единицы — перемещайтесь по Солнечной системе</p>
+      <p>🪐 9 реальных планет — от Меркурия до Плутона</p>
+      <p>🚀 Улучшения — увеличивайте силу, криты и активируйте помощника</p>
+      <p>✨ Редкие блоки — дают бонусы и огромные награды!</p>
+      <p>⚠️ Если блок уйдёт за экран — вы потеряете часть улучшения!</p>
+      <button id="continueBtn" class="btn">Продолжить</button>
+      <button id="startBtn" class="btn">Новая игра</button>
+      <button id="langBtn-welcome">🇷🇺</button>
+    </div>
+
+    <!-- 🛒 Контейнеры для магазина и достижений (инициализируются через JS) -->
+    <div id="shop-container" class="shop-container"></div>
+    <div id="achievements-container" class="achievements-container"></div>
   </div>
 
-  <!-- Подключение скриптов -->
-  <script src="js/translations.js"></script>
-  <script src="js/save-system.js"></script>
-  <script src="js/planet-background.js"></script>
+  <!-- 🔊 Звуки (замените пути на реальные файлы) -->
+  <audio id="clickSound" src="audio/click.mp3" preload="auto"></audio>
+  <audio id="breakSound" src="audio/break.mp3" preload="auto"></audio>
+  <audio id="comboSound" src="audio/combo.mp3" preload="auto"></audio>
+  <audio id="helperSound" src="audio/helper.mp3" preload="auto"></audio>
+  <audio id="upgradeSound" src="audio/upgrade.mp3" preload="auto"></audio>
+  <audio id="penaltySound" src="audio/penalty.mp3" preload="auto"></audio>
+
+  <!-- 📦 Подключение игровой логики (строго в этом порядке) -->
   <script src="js/game-logic.js"></script>
   <script src="js/shop.js"></script>
   <script src="js/achievements.js"></script>
-  
-  <script>
-    // Инициализация Telegram Web App
-    function initTelegram() {
-      if (window.Telegram && window.Telegram.WebApp) {
-        const tg = window.Telegram.WebApp;
-        tg.ready();
-        tg.expand();
+  <script src="js/save-system.js"></script>
+  <script src="js/translations.js"></script>
+  <script src="js/telegram-integration.js"></script>
+  <script src="js/daily-bonus.js"></script>
+
+  <!-- 🌌 Инициализация 3D-фона (ES-модуль, запускается после загрузки DOM) -->
+  <script type="module">
+    import { ParticlesSwarm } from './js/Sun_System.js';
+    import { BackgroundManager } from './js/BackgroundManager.js';
+
+    window.bgManager = null;
+
+    function initSpaceBackground() {
+      const container = document.getElementById('space-bg-container');
+      if (!container) return;
+
+      try {
+        // Определяем устройство для оптимизации
+        const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
         
-        console.log('Telegram Web App инициализирован:', {
-          platform: tg.platform,
-          version: tg.version,
-          initData: tg.initData
+        window.bgManager = new BackgroundManager(container, {
+          particleCount: isMobile ? 10000 : 20000,
+          speedMult: 1.0,
+          enableBloom: true,
+          cameraBaseZ: 120,
+          cameraMinZ: 25,
+          fovStart: 70,
+          fovMin: 38,
+          speedMultBase: 1.0,
+          speedMultMax: 4.0,
+          bloomStart: 1.4,
+          bloomMax: 2.8
         });
-        
-        // Настраиваем тему
-        document.documentElement.style.setProperty('--tg-theme-bg-color', tg.themeParams.bg_color || '#000000');
-        document.documentElement.style.setProperty('--tg-theme-text-color', tg.themeParams.text_color || '#ffffff');
-        document.documentElement.style.setProperty('--tg-theme-button-color', tg.themeParams.button_color || '#4CAF50');
-        
-        // Сохраняем в глобальную область видимости
-        window.tg = tg;
-      }
-    }
-    
-    // Функция для определения, находимся ли мы на GitHub Pages
-    function isGitHubPages() {
-      return window.location.hostname.includes('github.io');
-    }
-    
-    // Адаптация путей для GitHub Pages
-    function adaptPathsForGitHubPages() {
-      if (isGitHubPages()) {
-        console.log('GitHub Pages detected, adapting paths...');
-        const basePath = '/kosmicheskiy_klikker/';
-        
-        // Обновляем пути к аудио файлам
-        const audioFiles = ['clickSound', 'breakSound', 'upgradeSound', 'comboSound', 'helperSound'];
-        audioFiles.forEach(id => {
-          const audio = document.getElementById(id);
-          if (audio && audio.src) {
-            const currentSrc = audio.src.split('/').pop();
-            audio.src = basePath + 'audio/' + currentSrc;
+
+        // Подписка на события фона для обновления UI
+        window.bgManager.on('progress:updated', (data) => {
+          const pt = document.getElementById('progressText');
+          if (pt) pt.textContent = `Прогресс: ${data.au} а.е. (${data.percent}%)`;
+        });
+
+        window.bgManager.on('planet:near', (data) => {
+          const title = document.getElementById('gameTitle');
+          if (title && !document.body.classList.contains('traveling')) {
+            title.textContent = `🪐 ${data.label}`;
           }
         });
+
+        // Жизненный цикл
+        window.addEventListener('resize', () => window.bgManager?.resize());
+        document.addEventListener('visibilitychange', () => {
+          document.hidden ? window.bgManager?.pause() : window.bgManager?.resume();
+        });
+
+        // Убираем экран загрузки
+        const loader = document.getElementById('loading-overlay');
+        if (loader) loader.style.opacity = '0';
+        setTimeout(() => loader?.remove(), 600);
+        document.body.classList.add('bg-ready');
+        console.log('✅ Космический фон инициализирован');
+      } catch (e) {
+        console.error('❌ Ошибка инициализации фона:', e);
+        const loader = document.getElementById('loading-overlay');
+        if (loader) {
+          loader.textContent = '⚠️ 3D-фон не загрузился. Игра запущена в режиме совместимости.';
+          loader.style.color = '#ff9800';
+          setTimeout(() => loader?.remove(), 2000);
+        }
       }
     }
-    
-    // Основная инициализация
-    document.addEventListener('DOMContentLoaded', function() {
-      console.log('=== ИНИЦИАЛИЗАЦИЯ КОСМИЧЕСКОГО КЛИКЕРА ===');
-      console.log('Host:', window.location.hostname);
-      console.log('GitHub Pages:', isGitHubPages());
-      
-      // Инициализируем Telegram если доступно
-      initTelegram();
-      
-      // Адаптируем пути для GitHub Pages
-      adaptPathsForGitHubPages();
-      
-      // Инициализация планетарного фона
-      if (window.planetBackground && window.planetBackground.init) {
-        window.planetBackground.init();
-      }
-      
-      // Даем время на инициализацию сохранения
-      setTimeout(function() {
-        // Проверяем, инициализированы ли gameState и gameMetrics
-        if (!window.gameState || !window.gameMetrics) {
-          console.warn('gameState или gameMetrics не инициализированы, создаем...');
-          if (!window.gameState) window.gameState = {};
-          if (!window.gameMetrics) window.gameMetrics = {};
-        }
-        
-        console.log('Текущее состояние:', {
-          coins: window.gameState.coins,
-          damage: window.gameState.totalDamageDealt,
-          location: window.gameState.currentLocation,
-          platform: window.Telegram ? 'Telegram' : 'Web'
-        });
-        
-        // Обновляем кнопку продолжения
-        if (typeof window.updateContinueButton === 'function') {
-          window.updateContinueButton();
-        }
-        
-        // Инициализируем другие системы
-        if (window.achievementsSystem && window.achievementsSystem.init) {
-          window.achievementsSystem.init();
-        }
-        
-        if (window.shopSystem && window.shopSystem.init) {
-          window.shopSystem.init();
-        }
-        
-        // Запускаем игровую логику
-        if (window.gameFunctions && window.gameFunctions.updateHUD) {
-          window.gameFunctions.updateHUD();
-          window.gameFunctions.updateUpgradeButtons();
-          window.gameFunctions.setLocation(window.gameState.currentLocation || 'mercury');
-        }
-        
-        if (typeof window.updateLanguageFlag === 'function') {
-          window.updateLanguageFlag();
-        }
-        
-        if (typeof window.updateAllTranslations === 'function') {
-          window.updateAllTranslations();
-        }
-        
-        console.log('✅ Игра успешно инициализирована');
-        
-        // Скрываем экран загрузки
-        setTimeout(() => {
-          const loadingScreen = document.getElementById('welcomeScreen');
-          if (loadingScreen) {
-            loadingScreen.style.opacity = '1';
-          }
-        }, 500);
-        
-      }, 300);
-      
-      // Блокировка жестов
-      document.addEventListener('touchstart', function(e) {
-        if (e.touches.length > 1) e.preventDefault();
-      }, { passive: false });
-      
-      document.addEventListener('gesturestart', function(e) {
-        e.preventDefault();
-      }, { passive: false });
-      
-      document.addEventListener('gesturechange', function(e) {
-        e.preventDefault();
-      }, { passive: false });
-      
-      document.addEventListener('gestureend', function(e) {
-        e.preventDefault();
-      }, { passive: false });
-    });
-    
-    // Функция для отладки сохранения
-    window.debugSave = function() {
-      const saved = localStorage.getItem('cosmicBlocksSave');
-      console.log('=== ДЕБАГ СОХРАНЕНИЯ ===');
-      
-      if (saved) {
-        try {
-          const data = JSON.parse(saved);
-          console.log('✅ Сохранение найдено:', {
-            timestamp: new Date(data.timestamp).toLocaleString(),
-            coins: data.gameState?.coins,
-            damage: data.gameState?.totalDamageDealt,
-            location: data.gameState?.currentLocation,
-            version: data.version
-          });
-        } catch (e) {
-          console.error('❌ Ошибка парсинга:', e);
-        }
-      } else {
-        console.log('❌ Сохранение не найдено');
-      }
-    };
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initSpaceBackground);
+    } else {
+      initSpaceBackground();
+    }
   </script>
 </body>
 </html>
