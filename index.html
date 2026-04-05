@@ -14,7 +14,7 @@
     <!-- ✅ Telegram WebApp Script -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     
-    <!-- Font Awesome для иконок -->
+    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <!-- Google Fonts -->
@@ -45,8 +45,8 @@
             position: fixed !important;
             top: 0 !important; left: 0 !important;
             width: 100% !important; height: 100% !important;
-            z-index: 0 !important; /* Самый нижний слой */
-            pointer-events: none !important; /* Клики проходят сквозь фон */
+            z-index: 0 !important;
+            pointer-events: none !important;
         }
         
         #planetBackgroundCanvas {
@@ -56,14 +56,14 @@
 </head>
 <body>
 
-    <!-- 🌌 Контейнер для 3D-фона (Солнечная система) -->
+    <!-- 🌌 Контейнер для 3D-фона -->
     <div id="space-bg-container"></div>
-    
+
     <!-- 🎮 Игровой интерфейс -->
     <header id="header">
         <h1 id="gameTitle">☿ Меркурий</h1>
     </header>
-    
+
     <div id="hud-left">
         <div class="hud-item"><i>💎</i> Кристаллы: <span id="coins-value">0</span></div>
         <div class="hud-item"><i>👊</i> Сила: <span id="clickPower-value">1</span></div>
@@ -115,6 +115,7 @@
 
     <!-- 🚀 Экран приветствия -->
     <div id="welcomeScreen">
+        <button id="langBtn-welcome">🇷</button>
         <h2>🚀 КОСМИЧЕСКИЙ КЛИКЕР</h2>
         <p>Разрушайте восходящие блоки и собирайте космические Кристаллы!</p>
         <p>Каждый блок требует определённого количества ударов для разрушения.</p>
@@ -126,7 +127,6 @@
         <p>⚠️ Если блок уйдёт за экран — вы потеряете часть улучшения!</p>
         <button id="continueBtn" class="btn">Продолжить</button>
         <button id="startBtn" class="btn">Новая игра</button>
-        <button id="langBtn-welcome">🇷🇺</button>
     </div>
 
     <!-- 🔊 Звуки -->
@@ -137,7 +137,7 @@
     <audio id="upgradeSound" src="audio/upgrade.mp3" preload="auto"></audio>
     <audio id="penaltySound" src="audio/penalty.mp3" preload="auto"></audio>
 
-    <!-- 📦 Подключение скриптов игры (в правильном порядке) -->
+    <!-- 📦 Подключение скриптов игры (ВАЖНЫЙ ПОРЯДОК!) -->
     <script src="js/save-system.js"></script>
     <script src="js/translations.js"></script>
     <script src="js/telegram-integration.js"></script>
@@ -167,13 +167,11 @@
                 // Создаем глобальный объект для управления фоном
                 window.bgManager = {
                     swarm: swarm,
-                    setProgress: (percent) => {
-                        if (swarm) swarm.speedMult = 0.5 + (percent / 100) * 3;
-                    },
+                    setProgress: (percent) => { if(swarm) swarm.speedMult = 0.5 + (percent/100)*3; },
                     flyToPlanet: () => {},
                     setPlanet: () => {},
-                    pause: () => { if (swarm) swarm.speedMult = 0; },
-                    resume: () => { if (swarm) swarm.speedMult = 1.0; },
+                    pause: () => { if(swarm) swarm.speedMult = 0; },
+                    resume: () => { if(swarm) swarm.speedMult = 1.0; },
                     resize: () => {}
                 };
                 
