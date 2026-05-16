@@ -407,28 +407,22 @@
         }
     }
     
-function showAchievementsPanel() {
-    const achievementsPanel = document.getElementById('achievementsPanel');
-    if (achievementsPanel) {
-        achievementsPanel.style.display = 'flex';
-        achievementsPanelVisible = true;
-        updateAchievementsDisplay();
-        
-        // ✅ ПАУЗА (1 строка)
-        if (window.gameState) window.gameState.gameActive = false;
+    function showAchievementsPanel() {
+        const achievementsPanel = document.getElementById('achievementsPanel');
+        if (achievementsPanel) {
+            achievementsPanel.style.display = 'flex';
+            achievementsPanelVisible = true;
+            updateAchievementsDisplay();
+        }
     }
-}
-
-function hideAchievementsPanel() {
-    const achievementsPanel = document.getElementById('achievementsPanel');
-    if (achievementsPanel) {
-        achievementsPanel.style.display = 'none';
-        achievementsPanelVisible = false;
-        
-        // ✅ ВОЗОБНОВЛЕНИЕ (1 строка)
-        if (window.gameState) window.gameState.gameActive = true;
+    
+    function hideAchievementsPanel() {
+        const achievementsPanel = document.getElementById('achievementsPanel');
+        if (achievementsPanel) {
+            achievementsPanel.style.display = 'none';
+            achievementsPanelVisible = false;
+        }
     }
-}
     
     function updateProgress(category, value) {
         const gameState = window.gameState;
